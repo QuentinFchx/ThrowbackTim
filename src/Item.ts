@@ -1,5 +1,3 @@
-declare var game: Phaser.Game;
-
 export class Item {
 	public Sprite: Phaser.Sprite;
 
