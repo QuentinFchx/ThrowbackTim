@@ -1,7 +1,7 @@
 (function () {
 'use strict';
 
-const DEBUG = false;
+const DEBUG_HITBOX = true;
 class Item {
     constructor(tileSrc) {
         this.tileSrc = tileSrc;
@@ -9,7 +9,7 @@ class Item {
     }
     spawn(x, y) {
         const sprite = game.add.sprite(x, y, this.tileSrc);
-        game.physics.p2.enable(sprite, DEBUG);
+        game.physics.p2.enable(sprite, DEBUG_HITBOX);
         sprite.body.setMaterial(this.spriteMaterial);
         return sprite;
     }
@@ -54,14 +54,36 @@ class Ramp extends StaticItem {
         const body = sprite.body;
         body.clearShapes();
         body.addPolygon(null, this.polygon);
-        console.log(body);
         return sprite;
     }
 }
 function getRamps() {
-    const MetalRamp = new Ramp('metal_ramp', [[78, 0], [96, 18], [18, 96], [0, 76]]);
+    const MetalRamp1 = new Ramp('metal_ramp1', [[78, 0], [96, 18], [18, 96], [0, 76]]);
     const MetalRamp2 = new Ramp('metal_ramp2', [[18, 0], [96, 77], [78, 96], [0, 18]]);
-    return { MetalRamp, MetalRamp2 };
+    return { MetalRamp1, MetalRamp2 };
+}
+
+class Pipe extends StaticItem {
+    constructor(tileSrc, polygons) {
+        super(tileSrc);
+        this.polygons = polygons;
+    }
+    spawn(x, y) {
+        const sprite = super.spawn(x, y);
+        const body = sprite.body;
+        body.clearShapes();
+        this.polygons.forEach(polygon => body.addPolygon(null, polygon));
+        //body.data.position = [0,0];
+        console.log(body);
+        return sprite;
+    }
+}
+function getPipes() {
+    const MetalPipe1 = new Pipe('metal_pipe1', [
+        [[50, 0], [50, 40], [36, 51], [1, 50], [2, 47], [36, 48], [48, 38], [49, 2]],
+        [[95, 1], [95, 44], [76, 76], [39, 95], [0, 95], [0, 92], [39, 92], [74, 74], [92, 44], [92, 0]],
+    ]);
+    return { MetalPipe1 };
 }
 
 const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
@@ -69,8 +91,9 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.image('logo', 'assets/phaser2.png');
         game$1.load.image('metal_wall', 'assets/tiles/metal_wall.png');
         game$1.load.image('ball_football', 'assets/sprites/ball_football.png');
-        game$1.load.image('metal_ramp', 'assets/sprites/metal_ramp.png');
+        game$1.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
         game$1.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
+        game$1.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {
@@ -113,7 +136,8 @@ function initPhysics() {
 }
 function addItems() {
     const { Football } = getBalls();
-    const { MetalRamp, MetalRamp2 } = getRamps();
+    const { MetalRamp1, MetalRamp2 } = getRamps();
+    const { MetalPipe1 } = getPipes();
     Football.spawn(430, 100);
     Football.spawn(130, 80);
     Football.spawn(630, 50);
@@ -122,8 +146,9 @@ function addItems() {
     game$1.input.onTap.add((pointer) => {
         Football.spawn(pointer.x, pointer.y);
     }, this);
-    MetalRamp.spawn(400, 200);
+    MetalRamp1.spawn(400, 200);
     MetalRamp2.spawn(700, 200);
+    MetalPipe1.spawn(300, 250);
 }
 window.game = game$1;
 //# sourceMappingURL=app.js.map

@@ -11,15 +11,14 @@ export class Ramp extends StaticItem {
 
 		body.clearShapes();
 		body.addPolygon(null, this.polygon)
-		console.log(body)
 		return sprite;
 	}
 }
 
 export function getRamps(){
 
-	const MetalRamp = new Ramp('metal_ramp', [ [78,0], [96,18], [18,96], [0,76] ]);
+	const MetalRamp1 = new Ramp('metal_ramp1', [ [78,0], [96,18], [18,96], [0,76] ]);
 	const MetalRamp2 = new Ramp('metal_ramp2', [ [18,0], [96,77], [78, 96], [0,18] ]);
 
-	return { MetalRamp, MetalRamp2 }
+	return { MetalRamp1, MetalRamp2 }
 }

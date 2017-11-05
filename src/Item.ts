@@ -1,4 +1,4 @@
-const DEBUG = false;
+const DEBUG_HITBOX = true;
 
 export class Item {
 	spriteMaterial: Phaser.Physics.P2.Material;
@@ -9,7 +9,7 @@ export class Item {
 
 	spawn(x: number, y: number): Phaser.Sprite {
 		const sprite = game.add.sprite(x, y, this.tileSrc)
-		game.physics.p2.enable(sprite, DEBUG);
+		game.physics.p2.enable(sprite, DEBUG_HITBOX);
 		sprite.body.setMaterial(this.spriteMaterial);
 		return sprite;
 	}

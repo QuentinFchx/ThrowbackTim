@@ -1,5 +1,6 @@
 import {getBalls} from "./items/balls";
 import {getRamps} from "./items/ramps";
+import {getPipes} from "./items/pipes";
 
 const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 	preload(){
@@ -7,8 +8,9 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.image('metal_wall', 'assets/tiles/metal_wall.png');
 
 		game.load.image('ball_football', 'assets/sprites/ball_football.png');
-		game.load.image('metal_ramp', 'assets/sprites/metal_ramp.png');
+		game.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
 		game.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
+		game.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
@@ -69,7 +71,8 @@ function initPhysics(){
 function addItems(){
 
 	const { Football } = getBalls();
-	const {MetalRamp, MetalRamp2} = getRamps();
+	const {MetalRamp1, MetalRamp2} = getRamps();
+	const {MetalPipe1} = getPipes();
 
 	Football.spawn(430, 100)
 	Football.spawn(130, 80)
@@ -82,8 +85,10 @@ function addItems(){
 	}, this);
 
 
-	MetalRamp.spawn(400, 200)
+	MetalRamp1.spawn(400, 200)
 	MetalRamp2.spawn(700, 200)
+
+	MetalPipe1.spawn(300,250);
 }
 
 window.game = game;
