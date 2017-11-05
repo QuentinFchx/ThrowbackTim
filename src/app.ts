@@ -70,6 +70,10 @@ function addItems(){
 	Football.spawn(630, 50)
 	Football.spawn(810, 50)
 	Football.spawn(1080, 40)
+
+	game.input.onTap.add((pointer: Phaser.Pointer) => {
+		Football.spawn(pointer.x, pointer.y);
+	}, this);
 }
 
 window.game = game;

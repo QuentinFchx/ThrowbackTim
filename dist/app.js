@@ -96,6 +96,9 @@ function addItems() {
     Football.spawn(630, 50);
     Football.spawn(810, 50);
     Football.spawn(1080, 40);
+    game$1.input.onTap.add(function (pointer) {
+        Football.spawn(pointer.x, pointer.y);
+    }, this);
 }
 window.game = game$1;
 
