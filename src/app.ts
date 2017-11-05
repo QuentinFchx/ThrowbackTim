@@ -1,9 +1,10 @@
-import {getBalls} from "./items/balls";
-import {getRamps} from "./items/ramps";
-import {getPipes} from "./items/pipes";
+import { getBalls } from './items/balls';
+import { getBouncers } from './items/bouncers';
+import { getPipes } from './items/pipes';
+import { getRamps } from './items/ramps';
 
 const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
-	preload(){
+	preload() {
 		game.load.image('logo', 'assets/phaser2.png');
 		game.load.image('metal_wall', 'assets/tiles/metal_wall.png');
 
@@ -14,7 +15,7 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
-	create(){
+	create() {
 		const logo = game.add.sprite(game.world.centerX, game.world.centerY, 'logo');
 		logo.anchor.setTo(0.5, 0.5);
 
@@ -38,16 +39,16 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 
 		addItems();
 	},
-	update(){
+	update() {
 
 	},
-	render(){
+	render() {
 
 	}
 });
 
 
-function initPhysics(){
+function initPhysics() {
 	game.physics.startSystem(Phaser.Physics.P2JS);
 	game.physics.p2.gravity.y = 1000;
 
@@ -68,27 +69,30 @@ function initPhysics(){
 	});
 }
 
-function addItems(){
+function addItems() {
 
 	const { Football } = getBalls();
-	const {MetalRamp1, MetalRamp2} = getRamps();
-	const {MetalPipe1} = getPipes();
+	const { MetalRamp1, MetalRamp2 } = getRamps();
+	const { MetalPipe1 } = getPipes();
+	const { Bouncy } = getBouncers();
 
-	Football.spawn(430, 100)
-	Football.spawn(130, 80)
-	Football.spawn(630, 50)
-	Football.spawn(810, 50)
-	Football.spawn(1080, 40)
+	Football.spawn(430, 100);
+	Football.spawn(130, 80);
+	Football.spawn(630, 50);
+	Football.spawn(810, 50);
+	Football.spawn(1080, 40);
 
 	game.input.onTap.add((pointer: Phaser.Pointer) => {
 		Football.spawn(pointer.x, pointer.y);
 	}, this);
 
 
-	MetalRamp1.spawn(400, 200)
-	MetalRamp2.spawn(700, 200)
+	MetalRamp1.spawn(400, 200);
+	MetalRamp2.spawn(700, 200);
 
-	MetalPipe1.spawn(300,250);
+	MetalPipe1.spawn(300, 250);
+
+	Bouncy.spawn(500, 500);
 }
 
 window.game = game;

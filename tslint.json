@@ -5,7 +5,9 @@
 	],
 	"jsRules": {},
 	"rules": {
+		"array-type": false,
 		"comment-format": false,
+		"curly": false,
 		"indent": [
 			true,
 			"tabs"
