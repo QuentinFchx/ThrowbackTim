@@ -1,10 +1,14 @@
-import {Ball} from "./Item";
+import {getBalls} from "./items/balls";
+import {getRamps} from "./items/ramps";
 
 const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 	preload(){
 		game.load.image('logo', 'assets/phaser2.png');
-		game.load.image('ball_football', 'assets/sprites/ball_football.png');
 		game.load.image('metal_wall', 'assets/tiles/metal_wall.png');
+
+		game.load.image('ball_football', 'assets/sprites/ball_football.png');
+		game.load.image('metal_ramp', 'assets/sprites/metal_ramp.png');
+		game.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
@@ -63,7 +67,9 @@ function initPhysics(){
 }
 
 function addItems(){
-	const Football = new Ball('ball_football', 32)
+
+	const { Football } = getBalls();
+	const {MetalRamp, MetalRamp2} = getRamps();
 
 	Football.spawn(430, 100)
 	Football.spawn(130, 80)
@@ -74,6 +80,10 @@ function addItems(){
 	game.input.onTap.add((pointer: Phaser.Pointer) => {
 		Football.spawn(pointer.x, pointer.y);
 	}, this);
+
+
+	MetalRamp.spawn(400, 200)
+	MetalRamp2.spawn(700, 200)
 }
 
 window.game = game;
