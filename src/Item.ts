@@ -3,12 +3,12 @@ const DEBUG_HITBOX = true;
 export class Item {
 	spriteMaterial: Phaser.Physics.P2.Material;
 
-	constructor(public tileSrc: string){
+	constructor(public tileSrc: string) {
 		this.spriteMaterial = game.physics.p2.createMaterial('spriteMaterial');
 	}
 
 	spawn(x: number, y: number): Phaser.Sprite {
-		const sprite = game.add.sprite(x, y, this.tileSrc)
+		const sprite = game.add.sprite(x, y, this.tileSrc);
 		game.physics.p2.enable(sprite, DEBUG_HITBOX);
 		sprite.body.setMaterial(this.spriteMaterial);
 		return sprite;
@@ -16,7 +16,7 @@ export class Item {
 }
 
 export class Ball extends Item {
-	constructor(tileSrc: string, public bboxRadius: number){
+	constructor(tileSrc: string, public bboxRadius: number) {
 		super(tileSrc);
 	}
 
@@ -28,7 +28,7 @@ export class Ball extends Item {
 }
 
 export class StaticItem extends Item {
-	constructor(tileSrc: string){
+	constructor(tileSrc: string) {
 		super(tileSrc);
 	}
 
