@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"module": "ES2015",
+		"target": "es6",
+		"outDir": "./dist/",
+		"sourceMap": true
+	},
+	"include": [
+		"./typings/phaser.comments.d.ts",
+		"./src/globals.d.ts",
+		"./src/*.ts"
+	]
+}

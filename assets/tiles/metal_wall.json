@@ -1,0 +1,12 @@
+{ "columns":14,
+ "image":"metal_wall.png",
+ "imageheight":32,
+ "imagewidth":448,
+ "margin":0,
+ "name":"metal_wall",
+ "spacing":0,
+ "tilecount":14,
+ "tileheight":32,
+ "tilewidth":32,
+ "type":"tileset"
+}

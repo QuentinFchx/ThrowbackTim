@@ -1,0 +1,16 @@
+{
+  "name": "to_be_defined",
+  "version": "0.0.0",
+  "description": "Game Off 2017 submission",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup -c \"rollup.config.js\"",
+    "watch": "npm run build -- --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "rollup": "^0.50.0",
+    "rollup-plugin-typescript": "^0.8.1"
+  }
+}
