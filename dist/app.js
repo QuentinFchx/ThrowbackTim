@@ -71,6 +71,32 @@ function getBouncers() {
     };
 }
 
+class Hunter extends Item {
+    constructor(tileSrc, polygon) {
+        super(tileSrc);
+        this.polygon = polygon;
+        this.prey = 'ball_football';
+    }
+    spawn(x, y) {
+        const sprite = super.spawn(x, y);
+        const body = sprite.body;
+        body.clearShapes();
+        body.addPolygon(null, this.polygon);
+        setInterval(this.hunt, 1000);
+        return sprite;
+    }
+    hunt() {
+        const preys = game.world.getAll('key', this.prey);
+        console.log(preys);
+    }
+}
+function getHunters() {
+    const Turtle = new Hunter('hunter', [[0, 0], [20, 0], [20, 20], [0, 20]]);
+    return {
+        Turtle
+    };
+}
+
 class Pipe extends StaticItem {
     constructor(tileSrc, polygons) {
         super(tileSrc);
@@ -119,6 +145,7 @@ class Level1 {
         const { MetalRamp1, MetalRamp2 } = getRamps();
         const { MetalPipe1 } = getPipes();
         const { Bouncy } = getBouncers();
+        const { Turtle } = getHunters();
         Football.spawn(430, 100);
         Football.spawn(130, 80);
         Football.spawn(630, 50);
@@ -131,6 +158,7 @@ class Level1 {
         MetalRamp2.spawn(700, 200);
         MetalPipe1.spawn(300, 250);
         Bouncy.spawn(500, 500);
+        Turtle.spawn(130, 400);
     }
 }
 
