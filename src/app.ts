@@ -1,7 +1,4 @@
-import { getBalls } from './items/balls';
-import { getBouncers } from './items/bouncers';
-import { getPipes } from './items/pipes';
-import { getRamps } from './items/ramps';
+import { Level1 } from './levels/level1';
 
 const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 	preload() {
@@ -37,7 +34,7 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		//  required. There is also a parameter to control optimising the map build.
 		game.physics.p2.convertTilemap(map, layerWalls);
 
-		addItems();
+		(new Level1()).initialize();
 	},
 	update() {
 
@@ -67,32 +64,6 @@ function initPhysics() {
 		// frictionRelaxation: 3; // Relaxation of the resulting FrictionEquation that this ContactMaterial generate.
 		// surfaceVelocity: 0; // Will add surface velocity to this material. If bodyA rests on top if bodyB, and the surface velocity is positive, bodyA will slide to the right.
 	});
-}
-
-function addItems() {
-
-	const { Football } = getBalls();
-	const { MetalRamp1, MetalRamp2 } = getRamps();
-	const { MetalPipe1 } = getPipes();
-	const { Bouncy } = getBouncers();
-
-	Football.spawn(430, 100);
-	Football.spawn(130, 80);
-	Football.spawn(630, 50);
-	Football.spawn(810, 50);
-	Football.spawn(1080, 40);
-
-	game.input.onTap.add((pointer: Phaser.Pointer) => {
-		Football.spawn(pointer.x, pointer.y);
-	}, this);
-
-
-	MetalRamp1.spawn(400, 200);
-	MetalRamp2.spawn(700, 200);
-
-	MetalPipe1.spawn(300, 250);
-
-	Bouncy.spawn(500, 500);
 }
 
 window.game = game;
