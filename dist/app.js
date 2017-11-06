@@ -42,25 +42,33 @@ function getBalls() {
         Football
     };
 }
-//# sourceMappingURL=balls.js.map
 
-class Ramp extends StaticItem {
+class Bouncer extends StaticItem {
     constructor(tileSrc, polygon) {
         super(tileSrc);
         this.polygon = polygon;
+        this.bounceFactor = 1.5;
     }
     spawn(x, y) {
         const sprite = super.spawn(x, y);
         const body = sprite.body;
         body.clearShapes();
         body.addPolygon(null, this.polygon);
+        body.onBeginContact.add(onContact, this);
         return sprite;
     }
 }
-function getRamps() {
-    const MetalRamp1 = new Ramp('metal_ramp1', [[78, 0], [96, 18], [18, 96], [0, 76]]);
-    const MetalRamp2 = new Ramp('metal_ramp2', [[18, 0], [96, 77], [78, 96], [0, 18]]);
-    return { MetalRamp1, MetalRamp2 };
+function onContact(body, bodyB, shapeA, shapeB, equations) {
+    const contactEquation = equations[0];
+    const isTopSurface = contactEquation.contactPointA[0] === 0;
+    if (isTopSurface)
+        contactEquation.restitution = this.bounceFactor;
+}
+function getBouncers() {
+    const Bouncy = new Bouncer('bouncer', [[0, 0], [60, 0], [60, 20], [0, 20]]);
+    return {
+        Bouncy
+    };
 }
 
 class Pipe extends StaticItem {
@@ -84,6 +92,46 @@ function getPipes() {
         [[95, 1], [95, 44], [76, 76], [39, 95], [0, 95], [0, 92], [39, 92], [74, 74], [92, 44], [92, 0]],
     ]);
     return { MetalPipe1 };
+}
+
+class Ramp extends StaticItem {
+    constructor(tileSrc, polygon) {
+        super(tileSrc);
+        this.polygon = polygon;
+    }
+    spawn(x, y) {
+        const sprite = super.spawn(x, y);
+        const body = sprite.body;
+        body.clearShapes();
+        body.addPolygon(null, this.polygon);
+        return sprite;
+    }
+}
+function getRamps() {
+    const MetalRamp1 = new Ramp('metal_ramp1', [[78, 0], [96, 18], [18, 96], [0, 76]]);
+    const MetalRamp2 = new Ramp('metal_ramp2', [[18, 0], [96, 77], [78, 96], [0, 18]]);
+    return { MetalRamp1, MetalRamp2 };
+}
+
+class Level1 {
+    initialize() {
+        const { Football } = getBalls();
+        const { MetalRamp1, MetalRamp2 } = getRamps();
+        const { MetalPipe1 } = getPipes();
+        const { Bouncy } = getBouncers();
+        Football.spawn(430, 100);
+        Football.spawn(130, 80);
+        Football.spawn(630, 50);
+        Football.spawn(810, 50);
+        Football.spawn(1080, 40);
+        game.input.onTap.add((pointer) => {
+            Football.spawn(pointer.x, pointer.y);
+        }, this);
+        MetalRamp1.spawn(400, 200);
+        MetalRamp2.spawn(700, 200);
+        MetalPipe1.spawn(300, 250);
+        Bouncy.spawn(500, 500);
+    }
 }
 
 const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
@@ -113,7 +161,7 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         //  This call returns an array of body objects which you can perform addition actions on if
         //  required. There is also a parameter to control optimising the map build.
         game$1.physics.p2.convertTilemap(map, layerWalls);
-        addItems();
+        (new Level1()).initialize();
     },
     update() {
     },
@@ -134,24 +182,7 @@ function initPhysics() {
         relaxation: 3,
     });
 }
-function addItems() {
-    const { Football } = getBalls();
-    const { MetalRamp1, MetalRamp2 } = getRamps();
-    const { MetalPipe1 } = getPipes();
-    Football.spawn(430, 100);
-    Football.spawn(130, 80);
-    Football.spawn(630, 50);
-    Football.spawn(810, 50);
-    Football.spawn(1080, 40);
-    game$1.input.onTap.add((pointer) => {
-        Football.spawn(pointer.x, pointer.y);
-    }, this);
-    MetalRamp1.spawn(400, 200);
-    MetalRamp2.spawn(700, 200);
-    MetalPipe1.spawn(300, 250);
-}
 window.game = game$1;
-//# sourceMappingURL=app.js.map
 
 }());
 //# sourceMappingURL=app.js.map
