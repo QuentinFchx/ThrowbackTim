@@ -1,8 +1,17 @@
 import { Level1 } from './levels/level1';
 
+var level;
+
 const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 	preload() {
 		game.load.image('logo', 'assets/phaser2.png');
+		game.load.image('objective_bar', 'assets/objective_bar.png');
+		game.load.image('items_bar', 'assets/items_bar.png');
+
+		game.load.image('button_play', 'assets/sprites/button_play.png');
+		game.load.image('button_restart', 'assets/sprites/button_restart.png');
+		game.load.image('button_undo', 'assets/sprites/button_undo.png');
+
 		game.load.image('metal_wall', 'assets/tiles/metal_wall.png');
 
 		game.load.image('ball_football', 'assets/sprites/ball_football.png');
@@ -13,8 +22,8 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
 	create() {
-		const logo = game.add.sprite(game.world.centerX, game.world.centerY, 'logo');
-		logo.anchor.setTo(0.5, 0.5);
+
+		game.world.setBounds(0, 64, 32 * 35, 32 * 28);
 
 		initPhysics();
 
@@ -34,10 +43,12 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		//  required. There is also a parameter to control optimising the map build.
 		game.physics.p2.convertTilemap(map, layerWalls);
 
-		(new Level1()).initialize();
+		level = new Level1();
+		window.level = level;
+		level.initialize();
 	},
 	update() {
-
+		level.update();
 	},
 	render() {
 

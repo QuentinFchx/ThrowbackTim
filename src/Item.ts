@@ -1,3 +1,5 @@
+declare var game: Phaser.Game;
+
 const DEBUG_HITBOX = true;
 
 export class Item {

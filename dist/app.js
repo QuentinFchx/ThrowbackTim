@@ -1,6 +1,30 @@
 (function () {
 'use strict';
 
+var timeStarted = 0;
+class Level {
+    initialize() {
+        timeStarted = Date.now();
+        const objectiveBar = game.add.sprite(0, 0, 'objective_bar');
+        const itemsBar = game.add.sprite(1120, 0, 'items_bar');
+        const playButton = game.add.sprite(1144, 12, 'button_play');
+        const undoButton = game.add.sprite(1204, 12, 'button_undo');
+        const objectiveText = game.add.text(0, 0, this.objective, {
+            font: "bold 16px Arial",
+            fill: "#fff",
+            boundsAlignH: "center",
+            boundsAlignV: "middle",
+        });
+        objectiveText.setTextBounds(0, 0, 1120, 64);
+        this.timeText = game.add.text(1158, 100, "", { fill: "#000" });
+    }
+    update() {
+        const time = new Date(Date.now() - timeStarted);
+        let [m, s] = [time.getMinutes(), time.getSeconds()];
+        this.timeText.text = `${m < 10 ? '0' + m : m} : ${s < 10 ? '0' + s : s}`;
+    }
+}
+
 const DEBUG_HITBOX = true;
 class Item {
     constructor(tileSrc) {
@@ -42,6 +66,7 @@ function getBalls() {
         Football
     };
 }
+//# sourceMappingURL=balls.js.map
 
 class Bouncer extends StaticItem {
     constructor(tileSrc, polygon) {
@@ -113,8 +138,13 @@ function getRamps() {
     return { MetalRamp1, MetalRamp2 };
 }
 
-class Level1 {
+class Level1 extends Level {
+    constructor(...args) {
+        super(...args);
+        this.objective = "Faire tomber les 4 tortues dans le bac radioactif";
+    }
     initialize() {
+        super.initialize();
         const { Football } = getBalls();
         const { MetalRamp1, MetalRamp2 } = getRamps();
         const { MetalPipe1 } = getPipes();
@@ -129,14 +159,19 @@ class Level1 {
         }, this);
         MetalRamp1.spawn(400, 200);
         MetalRamp2.spawn(700, 200);
-        MetalPipe1.spawn(300, 250);
-        Bouncy.spawn(500, 500);
+        Bouncy.spawn(700, 500);
     }
 }
 
+var level;
 const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
     preload() {
         game$1.load.image('logo', 'assets/phaser2.png');
+        game$1.load.image('objective_bar', 'assets/objective_bar.png');
+        game$1.load.image('items_bar', 'assets/items_bar.png');
+        game$1.load.image('button_play', 'assets/sprites/button_play.png');
+        game$1.load.image('button_restart', 'assets/sprites/button_restart.png');
+        game$1.load.image('button_undo', 'assets/sprites/button_undo.png');
         game$1.load.image('metal_wall', 'assets/tiles/metal_wall.png');
         game$1.load.image('ball_football', 'assets/sprites/ball_football.png');
         game$1.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
@@ -145,8 +180,7 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {
-        const logo = game$1.add.sprite(game$1.world.centerX, game$1.world.centerY, 'logo');
-        logo.anchor.setTo(0.5, 0.5);
+        game$1.world.setBounds(0, 64, 32 * 35, 32 * 28);
         initPhysics();
         const map = game$1.add.tilemap('level1');
         map.addTilesetImage('metal_wall');
@@ -161,9 +195,12 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         //  This call returns an array of body objects which you can perform addition actions on if
         //  required. There is also a parameter to control optimising the map build.
         game$1.physics.p2.convertTilemap(map, layerWalls);
-        (new Level1()).initialize();
+        level = new Level1();
+        window.level = level;
+        level.initialize();
     },
     update() {
+        level.update();
     },
     render() {
     }
@@ -183,6 +220,7 @@ function initPhysics() {
     });
 }
 window.game = game$1;
+//# sourceMappingURL=app.js.map
 
 }());
 //# sourceMappingURL=app.js.map

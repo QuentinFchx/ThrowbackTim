@@ -1,3 +1,5 @@
+declare var game: Phaser.Game;
+
 import { Level } from '../Level';
 
 import { getBalls } from '../items/balls';
@@ -5,8 +7,13 @@ import { getBouncers } from '../items/bouncers';
 import { getPipes } from '../items/pipes';
 import { getRamps } from '../items/ramps';
 
-export class Level1 implements Level {
+export class Level1 extends Level {
+
+	objective = "Faire tomber les 4 tortues dans le bac radioactif";
+
 	initialize() {
+		super.initialize();
+
 		const { Football } = getBalls();
 		const { MetalRamp1, MetalRamp2 } = getRamps();
 		const { MetalPipe1 } = getPipes();
@@ -25,8 +32,6 @@ export class Level1 implements Level {
 		MetalRamp1.spawn(400, 200);
 		MetalRamp2.spawn(700, 200);
 
-		MetalPipe1.spawn(300, 250);
-
-		Bouncy.spawn(500, 500);
+		Bouncy.spawn(700, 500);
 	}
 }
