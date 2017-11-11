@@ -1,6 +1,6 @@
 declare var game: Phaser.Game;
 
-const DEBUG_HITBOX = true;
+const DEBUG_HITBOX = false;
 
 export class Item {
 	spriteMaterial: Phaser.Physics.P2.Material;

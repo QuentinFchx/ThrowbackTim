@@ -64,7 +64,7 @@ class Level {
     }
 }
 
-const DEBUG_HITBOX = true;
+const DEBUG_HITBOX = false;
 class Item {
     constructor(tileSrc) {
         this.tileSrc = tileSrc;
@@ -166,9 +166,8 @@ class Level1 extends Level {
         super.initSprites();
         const { Football } = getBalls();
         const { MetalRamp1, MetalRamp2 } = getRamps();
-        //const { MetalPipe1 } = getPipes();
         const { Bouncy } = getBouncers();
-        this.sprites.push(Football.spawn(430, 140), Football.spawn(130, 120), Football.spawn(630, 120), Football.spawn(810, 120), Football.spawn(1080, 140), MetalRamp1.spawn(400, 300), MetalRamp2.spawn(700, 300), Bouncy.spawn(700, 500));
+        this.sprites.push(Football.spawn(430, 140));
         /*
         game.input.onTap.add((pointer: Phaser.Pointer) => {
             Football.spawn(pointer.x, pointer.y);
@@ -183,10 +182,15 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.image('logo', 'assets/phaser2.png');
         game$1.load.image('objective_bar', 'assets/objective_bar.png');
         game$1.load.image('items_bar', 'assets/items_bar.png');
+        game$1.load.image('city_tiles', 'assets/tiles/city_tiles.png');
+        game$1.load.image('dirt_tiles', 'assets/tiles/dirt_tiles.png');
+        game$1.load.image('industrial_tiles', 'assets/tiles/industrial_tiles.png');
+        game$1.load.image('metal_tiles', 'assets/tiles/metal_tiles.png');
+        game$1.load.image('metal_tiles_2', 'assets/tiles/metal_tiles_2.png');
+        game$1.load.image('mytilesheet', 'assets/tiles/mytilesheet.png');
         game$1.load.image('button_play', 'assets/sprites/button_play.png');
         game$1.load.image('button_restart', 'assets/sprites/button_restart.png');
         game$1.load.image('button_undo', 'assets/sprites/button_undo.png');
-        game$1.load.image('metal_wall', 'assets/tiles/metal_wall.png');
         game$1.load.image('ball_football', 'assets/sprites/ball_football.png');
         game$1.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
         game$1.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
@@ -196,14 +200,22 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
     create() {
         game$1.paused = true;
         game$1.world.setBounds(0, 64, 32 * 35, 32 * 28);
+        game$1.stage.backgroundColor = "#4488AA";
         initPhysics();
         const map = game$1.add.tilemap('level1');
-        map.addTilesetImage('metal_wall');
+        map.addTilesetImage('city_tiles');
+        map.addTilesetImage('dirt_tiles');
+        map.addTilesetImage('industrial_tiles');
+        map.addTilesetImage('metal_tiles');
+        map.addTilesetImage('metal_tiles_2');
+        map.addTilesetImage('mytilesheet');
         map.setCollisionBetween(0, 7); // les tiles 0 à 7 gèrent les collisions
         window.map = map;
         //  Creates a new blank layer and sets the map dimensions.
         //  In this case the map is 40x30 tiles in size and the tiles are 32x32 pixels in size.
         //const layer = map.create('level', 40, 30, 32, 32);
+        map.createLayer('decor');
+        map.createLayer('decor_fg');
         const layerWalls = map.createLayer('walls');
         layerWalls.resizeWorld();
         //  Convert the tilemap layer into bodies. Only tiles that collide (see above) are created.
