@@ -22,7 +22,7 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
 	create() {
-
+		game.paused = true;
 		game.world.setBounds(0, 64, 32 * 35, 32 * 28);
 
 		initPhysics();

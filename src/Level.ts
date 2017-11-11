@@ -1,3 +1,5 @@
+import {Item} from "./Item";
+
 declare var game: Phaser.Game;
 
 var timeStarted =0;
@@ -6,6 +8,8 @@ export class Level {
 
 	objective: string;
 	timeText: Phaser.Text;
+	sprites: Array<Phaser.Sprite> = [];
+	items: Array<{item: Item, count: number}> = [];
 
 	initialize(){
 		timeStarted = Date.now();
@@ -16,19 +20,23 @@ export class Level {
 		const playButton = game.add.sprite(1144,12, 'button_play');
 		const undoButton = game.add.sprite(1204,12, 'button_undo');
 
+		playButton.inputEnabled = true;
 		playButton.events.onInputDown.add(e => {
 			if(game.paused){
-				playButton.frameName = "stop";
+				playButton.loadTexture('button_restart');
 				game.paused = false;
 			} else {
-				playButton.frameName = "play";
+				playButton.loadTexture('button_play');
 				game.paused = true;
+				this.initSprites()
 			}
 		});
 
+		undoButton.inputEnabled = true;
 		undoButton.events.onInputDown.add(e => {
-			playButton.frameName = "play";
+			playButton.loadTexture('button_play');
 			game.paused = true;
+			this.initSprites();
 			this.initItems();
 		})
 
@@ -40,10 +48,23 @@ export class Level {
 		});
 		objectiveText.setTextBounds(0, 0, 1120, 64);
 		this.timeText = game.add.text( 1158, 100, "", { fill : "#000" })
+
+		this.initSprites();
+		this.initItems();
+	}
+
+	initSprites(){
+		this.clearSprites()
 	}
 
 	initItems(){
 
+	}
+
+	clearSprites(){
+		for(let sprite of this.sprites){
+			sprite.destroy();
+		}
 	}
 
 	update(){

@@ -1,11 +1,11 @@
 declare var game: Phaser.Game;
 
-import { Level } from '../Level';
+import {Level} from '../Level';
 
-import { getBalls } from '../items/balls';
-import { getBouncers } from '../items/bouncers';
-import { getPipes } from '../items/pipes';
-import { getRamps } from '../items/ramps';
+import {getBalls} from '../items/balls';
+import {getBouncers} from '../items/bouncers';
+import {getPipes} from '../items/pipes';
+import {getRamps} from '../items/ramps';
 
 export class Level1 extends Level {
 
@@ -15,26 +15,33 @@ export class Level1 extends Level {
 		super.initialize();
 	}
 
-	initItems(){
+	initSprites(){
+		super.initSprites();
 
 		const { Football } = getBalls();
 		const { MetalRamp1, MetalRamp2 } = getRamps();
-		const { MetalPipe1 } = getPipes();
+		//const { MetalPipe1 } = getPipes();
 		const { Bouncy } = getBouncers();
 
-		Football.spawn(430, 100);
-		Football.spawn(130, 80);
-		Football.spawn(630, 50);
-		Football.spawn(810, 50);
-		Football.spawn(1080, 40);
+		this.sprites.push(
+			Football.spawn(430, 140),
+			Football.spawn(130, 120),
+			Football.spawn(630, 120),
+			Football.spawn(810, 120),
+			Football.spawn(1080, 140),
 
+
+			MetalRamp1.spawn(400, 300),
+			MetalRamp2.spawn(700, 300),
+
+			Bouncy.spawn(700, 500)
+	)
+
+		/*
 		game.input.onTap.add((pointer: Phaser.Pointer) => {
 			Football.spawn(pointer.x, pointer.y);
 		}, this);
+		*/
 
-		MetalRamp1.spawn(400, 200);
-		MetalRamp2.spawn(700, 200);
-
-		Bouncy.spawn(700, 500);
 	}
 }

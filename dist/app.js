@@ -3,25 +3,33 @@
 
 var timeStarted = 0;
 class Level {
+    constructor() {
+        this.sprites = [];
+        this.items = [];
+    }
     initialize() {
         timeStarted = Date.now();
         const objectiveBar = game.add.sprite(0, 0, 'objective_bar');
         const itemsBar = game.add.sprite(1120, 0, 'items_bar');
         const playButton = game.add.sprite(1144, 12, 'button_play');
         const undoButton = game.add.sprite(1204, 12, 'button_undo');
+        playButton.inputEnabled = true;
         playButton.events.onInputDown.add(e => {
             if (game.paused) {
-                playButton.frameName = "stop";
+                playButton.loadTexture('button_restart');
                 game.paused = false;
             }
             else {
-                playButton.frameName = "play";
+                playButton.loadTexture('button_play');
                 game.paused = true;
+                this.initSprites();
             }
         });
+        undoButton.inputEnabled = true;
         undoButton.events.onInputDown.add(e => {
-            playButton.frameName = "play";
+            playButton.loadTexture('button_play');
             game.paused = true;
+            this.initSprites();
             this.initItems();
         });
         const objectiveText = game.add.text(0, 0, this.objective, {
@@ -32,8 +40,18 @@ class Level {
         });
         objectiveText.setTextBounds(0, 0, 1120, 64);
         this.timeText = game.add.text(1158, 100, "", { fill: "#000" });
+        this.initSprites();
+        this.initItems();
+    }
+    initSprites() {
+        this.clearSprites();
     }
     initItems() {
+    }
+    clearSprites() {
+        for (let sprite of this.sprites) {
+            sprite.destroy();
+        }
     }
     update() {
         const time = new Date(Date.now() - timeStarted);
@@ -113,29 +131,6 @@ function getBouncers() {
     };
 }
 
-class Pipe extends StaticItem {
-    constructor(tileSrc, polygons) {
-        super(tileSrc);
-        this.polygons = polygons;
-    }
-    spawn(x, y) {
-        const sprite = super.spawn(x, y);
-        const body = sprite.body;
-        body.clearShapes();
-        this.polygons.forEach(polygon => body.addPolygon(null, polygon));
-        //body.data.position = [0,0];
-        console.log(body);
-        return sprite;
-    }
-}
-function getPipes() {
-    const MetalPipe1 = new Pipe('metal_pipe1', [
-        [[50, 0], [50, 40], [36, 51], [1, 50], [2, 47], [36, 48], [48, 38], [49, 2]],
-        [[95, 1], [95, 44], [76, 76], [39, 95], [0, 95], [0, 92], [39, 92], [74, 74], [92, 44], [92, 0]],
-    ]);
-    return { MetalPipe1 };
-}
-
 class Ramp extends StaticItem {
     constructor(tileSrc, polygon) {
         super(tileSrc);
@@ -163,22 +158,18 @@ class Level1 extends Level {
     initialize() {
         super.initialize();
     }
-    initItems() {
+    initSprites() {
+        super.initSprites();
         const { Football } = getBalls();
         const { MetalRamp1, MetalRamp2 } = getRamps();
-        const { MetalPipe1 } = getPipes();
+        //const { MetalPipe1 } = getPipes();
         const { Bouncy } = getBouncers();
-        Football.spawn(430, 100);
-        Football.spawn(130, 80);
-        Football.spawn(630, 50);
-        Football.spawn(810, 50);
-        Football.spawn(1080, 40);
-        game.input.onTap.add((pointer) => {
+        this.sprites.push(Football.spawn(430, 140), Football.spawn(130, 120), Football.spawn(630, 120), Football.spawn(810, 120), Football.spawn(1080, 140), MetalRamp1.spawn(400, 300), MetalRamp2.spawn(700, 300), Bouncy.spawn(700, 500));
+        /*
+        game.input.onTap.add((pointer: Phaser.Pointer) => {
             Football.spawn(pointer.x, pointer.y);
         }, this);
-        MetalRamp1.spawn(400, 200);
-        MetalRamp2.spawn(700, 200);
-        Bouncy.spawn(700, 500);
+        */
     }
 }
 
@@ -199,6 +190,7 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {
+        game$1.paused = true;
         game$1.world.setBounds(0, 64, 32 * 35, 32 * 28);
         initPhysics();
         const map = game$1.add.tilemap('level1');
