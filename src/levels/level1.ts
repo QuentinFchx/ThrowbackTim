@@ -14,23 +14,22 @@ export class Level1 extends Level {
 		super.initialize();
 	}
 
-	initSprites(){
+	initSprites() {
 		super.initSprites();
 
-		const { Football } = getBalls();
-		const { MetalRamp1, MetalRamp2 } = getRamps();
-		const { Bouncy } = getBouncers();
+		const {Football} = getBalls();
+		const {MetalRamp1, MetalRamp2} = getRamps();
+		const {Bouncy} = getBouncers();
 
 		this.sprites.push(
-			Football.spawn(430, 140)
+			Football.spawn(515, 315)
+		)
 
-	)
 
-		/*
 		game.input.onTap.add((pointer: Phaser.Pointer) => {
 			Football.spawn(pointer.x, pointer.y);
 		}, this);
-		*/
+
 
 	}
 }

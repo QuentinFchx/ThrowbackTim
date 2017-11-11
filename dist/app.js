@@ -167,12 +167,10 @@ class Level1 extends Level {
         const { Football } = getBalls();
         const { MetalRamp1, MetalRamp2 } = getRamps();
         const { Bouncy } = getBouncers();
-        this.sprites.push(Football.spawn(430, 140));
-        /*
-        game.input.onTap.add((pointer: Phaser.Pointer) => {
+        this.sprites.push(Football.spawn(515, 315));
+        game.input.onTap.add((pointer) => {
             Football.spawn(pointer.x, pointer.y);
         }, this);
-        */
     }
 }
 
@@ -209,7 +207,6 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         map.addTilesetImage('metal_tiles');
         map.addTilesetImage('metal_tiles_2');
         map.addTilesetImage('mytilesheet');
-        map.setCollisionBetween(0, 7); // les tiles 0 à 7 gèrent les collisions
         window.map = map;
         //  Creates a new blank layer and sets the map dimensions.
         //  In this case the map is 40x30 tiles in size and the tiles are 32x32 pixels in size.
@@ -218,6 +215,7 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         map.createLayer('decor_fg');
         const layerWalls = map.createLayer('walls');
         layerWalls.resizeWorld();
+        map.setCollisionByExclusion([], true, layerWalls);
         //  Convert the tilemap layer into bodies. Only tiles that collide (see above) are created.
         //  This call returns an array of body objects which you can perform addition actions on if
         //  required. There is also a parameter to control optimising the map build.
