@@ -9,6 +9,21 @@ class Level {
         const itemsBar = game.add.sprite(1120, 0, 'items_bar');
         const playButton = game.add.sprite(1144, 12, 'button_play');
         const undoButton = game.add.sprite(1204, 12, 'button_undo');
+        playButton.events.onInputDown.add(e => {
+            if (game.paused) {
+                playButton.frameName = "stop";
+                game.paused = false;
+            }
+            else {
+                playButton.frameName = "play";
+                game.paused = true;
+            }
+        });
+        undoButton.events.onInputDown.add(e => {
+            playButton.frameName = "play";
+            game.paused = true;
+            this.initItems();
+        });
         const objectiveText = game.add.text(0, 0, this.objective, {
             font: "bold 16px Arial",
             fill: "#fff",
@@ -17,6 +32,8 @@ class Level {
         });
         objectiveText.setTextBounds(0, 0, 1120, 64);
         this.timeText = game.add.text(1158, 100, "", { fill: "#000" });
+    }
+    initItems() {
     }
     update() {
         const time = new Date(Date.now() - timeStarted);
@@ -145,6 +162,8 @@ class Level1 extends Level {
     }
     initialize() {
         super.initialize();
+    }
+    initItems() {
         const { Football } = getBalls();
         const { MetalRamp1, MetalRamp2 } = getRamps();
         const { MetalPipe1 } = getPipes();

@@ -13,6 +13,9 @@ export class Level1 extends Level {
 
 	initialize() {
 		super.initialize();
+	}
+
+	initItems(){
 
 		const { Football } = getBalls();
 		const { MetalRamp1, MetalRamp2 } = getRamps();
