@@ -47,7 +47,10 @@ export class Level {
 			boundsAlignV: "middle",
 		});
 		objectiveText.setTextBounds(0, 0, 1120, 64);
+
 		this.timeText = game.add.text( 1158, 100, "", { fill : "#000" })
+		this.updateTime();
+		setInterval(() => this.updateTime(), 1000);
 
 		this.initSprites();
 		this.initItems();
@@ -68,6 +71,10 @@ export class Level {
 	}
 
 	update(){
+
+	}
+
+	updateTime(){
 		const time = new Date(Date.now() - timeStarted);
 		let [m, s] = [time.getMinutes(), time.getSeconds()]
 		this.timeText.text = `${m<10 ? '0'+m : m} : ${s<10 ? '0'+s : s}`
