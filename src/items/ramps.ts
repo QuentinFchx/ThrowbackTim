@@ -1,8 +1,8 @@
 import {StaticItem} from "../Item";
 
 export class Ramp extends StaticItem {
-	constructor(tileSrc: string, public polygon: Array<Array<number>>){
-		super(tileSrc);
+	constructor(public key: string, public polygon: Array<Array<number>>){
+		super();
 	}
 
 	spawn(x: number, y: number): Phaser.Sprite {

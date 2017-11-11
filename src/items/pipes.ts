@@ -1,8 +1,8 @@
 import {StaticItem} from "../Item";
 
 export class Pipe extends StaticItem {
-	constructor(tileSrc: string, public polygons: Array<Array<Array<number>>>){
-		super(tileSrc);
+	constructor(public key: string, public polygons: Array<Array<Array<number>>>){
+		super();
 	}
 
 	spawn(x: number, y: number): Phaser.Sprite {

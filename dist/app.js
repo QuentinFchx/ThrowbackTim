@@ -1,16 +1,63 @@
 (function () {
 'use strict';
 
-var timeStarted = 0;
-class Level {
+const DEBUG_HITBOX = false;
+class Item {
     constructor() {
-        this.sprites = [];
-        this.items = [];
+        this.spriteMaterial = game.physics.p2.createMaterial('spriteMaterial');
     }
-    initialize() {
+    spawn(x, y) {
+        const sprite = game.add.sprite(x, y, this.key);
+        game.physics.p2.enable(sprite, DEBUG_HITBOX);
+        sprite.body.setMaterial(this.spriteMaterial);
+        return sprite;
+    }
+}
+class Ball extends Item {
+    constructor(key, bboxRadius) {
+        super();
+        this.key = key;
+        this.bboxRadius = bboxRadius;
+    }
+    spawn(x, y) {
+        const sprite = super.spawn(x, y);
+        sprite.body.setCircle(this.bboxRadius);
+        return sprite;
+    }
+}
+class StaticItem extends Item {
+    constructor() {
+        super();
+    }
+    spawn(x, y) {
+        const sprite = super.spawn(x, y);
+        sprite.body.dynamic = false;
+        return sprite;
+    }
+}
+
+class Pizza extends StaticItem {
+    constructor(...args) {
+        super(...args);
+        this.key = 'pizza';
+        this.width = 69;
+        this.height = 32;
+    }
+    spawn(x, y) {
+        const sprite = super.spawn(x, y);
+        sprite.body.setRectangle(this.width, this.height);
+        return sprite;
+    }
+}
+
+var timeStarted = 0;
+class ItemsBar {
+    constructor(items = []) {
+        this.items = items;
+        this.selectedItem = null;
+        this.itemSprites = [];
         timeStarted = Date.now();
-        const objectiveBar = game.add.sprite(0, 0, 'objective_bar');
-        const itemsBar = game.add.sprite(1120, 0, 'items_bar');
+        game.add.sprite(1120, 0, 'items_bar');
         const playButton = game.add.sprite(1144, 12, 'button_play');
         const undoButton = game.add.sprite(1204, 12, 'button_undo');
         playButton.inputEnabled = true;
@@ -26,36 +73,30 @@ class Level {
             }
         });
         undoButton.inputEnabled = true;
-        undoButton.events.onInputDown.add(e => {
+        undoButton.events.onInputDown.add(() => {
             playButton.loadTexture('button_play');
             game.paused = true;
             this.initSprites();
-            this.initItems();
         });
-        const objectiveText = game.add.text(0, 0, this.objective, {
-            font: "bold 16px Arial",
+        this.timeText = game.add.text(0, 0, "", {
+            font: "24px Arial",
             fill: "#fff",
             boundsAlignH: "center",
-            boundsAlignV: "middle",
+            boundsAlignV: "middle"
         });
-        objectiveText.setTextBounds(0, 0, 1120, 64);
-        this.timeText = game.add.text(1158, 100, "", { fill: "#000" });
+        this.timeText.setTextBounds(1151, 104, 96, 32);
         this.updateTime();
         setInterval(() => this.updateTime(), 1000);
         this.initSprites();
-        this.initItems();
     }
     initSprites() {
         this.clearSprites();
     }
-    initItems() {
-    }
     clearSprites() {
-        for (let sprite of this.sprites) {
+        for (let sprite of this.itemSprites) {
             sprite.destroy();
         }
-    }
-    update() {
+        this.itemSprites = [];
     }
     updateTime() {
         const time = new Date(Date.now() - timeStarted);
@@ -64,38 +105,50 @@ class Level {
     }
 }
 
-const DEBUG_HITBOX = false;
-class Item {
-    constructor(tileSrc) {
-        this.tileSrc = tileSrc;
-        this.spriteMaterial = game.physics.p2.createMaterial('spriteMaterial');
-    }
-    spawn(x, y) {
-        const sprite = game.add.sprite(x, y, this.tileSrc);
-        game.physics.p2.enable(sprite, DEBUG_HITBOX);
-        sprite.body.setMaterial(this.spriteMaterial);
-        return sprite;
-    }
-}
-class Ball extends Item {
-    constructor(tileSrc, bboxRadius) {
-        super(tileSrc);
-        this.bboxRadius = bboxRadius;
-    }
-    spawn(x, y) {
-        const sprite = super.spawn(x, y);
-        sprite.body.setCircle(this.bboxRadius);
-        return sprite;
+class ObjectiveBar {
+    constructor(objective) {
+        this.objective = objective;
+        this.sprite = game.add.sprite(0, 0, 'objective_bar');
+        this.text = game.add.text(0, 0, this.objective, {
+            font: "bold 16px Arial",
+            fill: "#fff",
+            boundsAlignH: "center",
+            boundsAlignV: "middle",
+        });
+        this.text.setTextBounds(0, 0, 1120, 64);
     }
 }
-class StaticItem extends Item {
-    constructor(tileSrc) {
-        super(tileSrc);
+
+class Level {
+    constructor() {
+        this.sprites = [];
+        this.items = [];
     }
-    spawn(x, y) {
-        const sprite = super.spawn(x, y);
-        sprite.body.dynamic = false;
-        return sprite;
+    initialize() {
+        this.itemsBar = new ItemsBar(this.items);
+        this.objectiveBar = new ObjectiveBar(this.objective);
+        this.initSprites();
+    }
+    initSprites() {
+        this.clearSprites();
+    }
+    clearSprites() {
+        for (let sprite of this.sprites) {
+            sprite.destroy();
+        }
+        this.sprites = [];
+    }
+    update() {
+    }
+    getSpritesInZone(x1, y1, x2, y2) {
+        if (x2 < x1)
+            [x1, x2] = [x2, x1];
+        if (y2 < y1)
+            [y1, y2] = [y2, y1];
+        return this.sprites.filter(sprite => sprite.position.x + sprite.width >= x1
+            && sprite.position.x <= x2
+            && sprite.position.y + sprite.height >= y1
+            && sprite.position.y <= y2);
     }
 }
 
@@ -108,8 +161,8 @@ function getBalls() {
 //# sourceMappingURL=balls.js.map
 
 class Bouncer extends StaticItem {
-    constructor(tileSrc, polygon) {
-        super(tileSrc);
+    constructor(key, polygon) {
+        super(key);
         this.polygon = polygon;
         this.bounceFactor = 1.5;
     }
@@ -136,8 +189,9 @@ function getBouncers() {
 }
 
 class Ramp extends StaticItem {
-    constructor(tileSrc, polygon) {
-        super(tileSrc);
+    constructor(key, polygon) {
+        super();
+        this.key = key;
         this.polygon = polygon;
     }
     spawn(x, y) {
@@ -154,6 +208,76 @@ function getRamps() {
     return { MetalRamp1, MetalRamp2 };
 }
 
+var DIRECTION;
+(function (DIRECTION) {
+    DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
+    DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
+})(DIRECTION || (DIRECTION = {}));
+
+class Animal extends Item {
+    constructor() {
+        super();
+        this.lookingDir = DIRECTION.RIGHT;
+        this.isWalking = false;
+        this.speed = 100;
+    }
+    spawn(x, y) {
+        this.sprite = super.spawn(x, y);
+        this.sprite.body.setRectangle(this.width, this.height);
+        this.sprite.update = () => this.update();
+        this.sprite.animations.add('walkLeft', [0, 1, 2], 3, true);
+        this.sprite.animations.add('walkRight', [3, 4, 5], 3, true);
+        this.sprite.animations.add('idleLeft', [1]);
+        this.sprite.animations.add('idleRight', [4]);
+        this.idle();
+        return this.sprite;
+    }
+    walk() {
+        this.sprite.animations.play(this.lookingDir === DIRECTION.RIGHT ? 'walkRight' : 'walkLeft');
+        this.isWalking = true;
+    }
+    idle() {
+        this.sprite.animations.play(this.lookingDir === DIRECTION.RIGHT ? 'idleRight' : 'idleLeft');
+        this.isWalking = false;
+    }
+    update() {
+        //game.debug.spriteInfo(this.sprite);
+        if (this.isWalking && this.sprite.body.angle > -30 && this.sprite.body.angle < 30) {
+            if (this.lookingDir === DIRECTION.RIGHT) {
+                this.sprite.body.moveRight(this.speed);
+            }
+            else {
+                this.sprite.body.moveLeft(this.speed);
+            }
+        }
+        let eye = {
+            x: this.lookingDir === DIRECTION.RIGHT ? this.sprite.position.x + 50 : this.sprite.position.x - 5,
+            y: this.sprite.position.y + 10
+        };
+        const pizza = level.getSpritesInZone(eye.x, eye.y - 15, eye.x + 500 * (this.lookingDir === DIRECTION.RIGHT ? 1 : -1), eye.y + 15).find((sprite) => {
+            return sprite.key === "pizza";
+        });
+        if (pizza && !this.isWalking)
+            this.walk();
+        else if (!pizza && this.isWalking)
+            this.idle();
+    }
+}
+function getAnimals() {
+    class Turtle extends Animal {
+        constructor(...args) {
+            super(...args);
+            this.key = "turtle";
+            this.width = 45;
+            this.height = 30;
+            this.speed = 50;
+        }
+    }
+    return {
+        Turtle
+    };
+}
+
 class Level1 extends Level {
     constructor(...args) {
         super(...args);
@@ -167,14 +291,21 @@ class Level1 extends Level {
         const { Football } = getBalls();
         const { MetalRamp1, MetalRamp2 } = getRamps();
         const { Bouncy } = getBouncers();
-        this.sprites.push(Football.spawn(515, 315));
+        const { Turtle } = getAnimals();
+        const donatello = new Turtle();
+        const leonardo = new Turtle();
+        const raphael = new Turtle();
+        const michelangelo = new Turtle();
+        leonardo.lookingDir = DIRECTION.LEFT;
+        const pizza = new Pizza();
+        this.sprites.push(donatello.spawn(130, 170), leonardo.spawn(1016, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 520), Football.spawn(515, 315));
         game.input.onTap.add((pointer) => {
-            Football.spawn(pointer.x, pointer.y);
+            this.sprites.push(pizza.spawn(pointer.x, pointer.y));
         }, this);
     }
 }
 
-var level;
+var level$1;
 const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
     preload() {
         game$1.load.image('logo', 'assets/phaser2.png');
@@ -193,6 +324,8 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
         game$1.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
         game$1.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');
+        game$1.load.image('pizza', 'assets/sprites/pizza.png');
+        game$1.load.spritesheet('turtle', 'assets/sprites/turtle_sheet.png', 45, 32);
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {
@@ -220,12 +353,12 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         //  This call returns an array of body objects which you can perform addition actions on if
         //  required. There is also a parameter to control optimising the map build.
         game$1.physics.p2.convertTilemap(map, layerWalls);
-        level = new Level1();
-        window.level = level;
-        level.initialize();
+        level$1 = new Level1();
+        window.level = level$1;
+        level$1.initialize();
     },
     update() {
-        level.update();
+        level$1.update();
     },
     render() {
     }
@@ -238,7 +371,7 @@ function initPhysics() {
     game$1.physics.p2.setWorldMaterial(worldMaterial, true, true, true, true);
     game$1.physics.p2.world.defaultMaterial = worldMaterial;
     Object.assign(game$1.physics.p2.world.defaultContactMaterial, {
-        friction: 1.5,
+        friction: 0.5,
         restitution: 0.65,
         stiffness: 1e7,
         relaxation: 3,

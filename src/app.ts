@@ -23,6 +23,9 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
 		game.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
 		game.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');
+		game.load.image('pizza', 'assets/sprites/pizza.png');
+
+		game.load.spritesheet('turtle', 'assets/sprites/turtle_sheet.png', 45, 32);
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
@@ -82,7 +85,7 @@ function initPhysics() {
 	game.physics.p2.world.defaultMaterial = worldMaterial;
 
 	Object.assign(game.physics.p2.world.defaultContactMaterial, {
-		friction: 1.5, // Friction to use in the contact of these two materials.
+		friction: 0.5, // Friction to use in the contact of these two materials.
 		restitution: 0.65, // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
 		stiffness: 1e7, // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
 		relaxation: 3, // Relaxation of the resulting ContactEquation that this ContactMaterial generate.
