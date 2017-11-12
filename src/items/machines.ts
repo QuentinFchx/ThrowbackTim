@@ -105,9 +105,8 @@ export class Laser extends Machine {
 			this.ray.frame = Laser.RAY_FRAMES[this.laserColor][isHorizontal ? 1 : 0]
 
 			if(isHorizontal){
-				this.ray.crop(new Phaser.Rectangle(0,8,32,8),false)
-				this.ray.texture.frame.y +=12;
-				this.ray.y = this.sprite.y + 8;
+				this.ray.crop(new Phaser.Rectangle(0,12,32,8),false)
+				this.ray.y = this.sprite.y + 12;
 				game.debug.spriteInfo(this.ray, 10, 20);
 				console.log(this.ray);
 			}
