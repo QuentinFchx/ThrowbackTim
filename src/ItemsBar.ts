@@ -1,15 +1,26 @@
 import {Item} from "./Item";
+import {Level} from "./Level";
 
 declare var game: Phaser.Game;
+declare var level: Level;
 
 var timeStarted =0;
 
+export interface ItemToPlace {
+	item: typeof Item,
+	available: number,
+	count?: number,
+	button?: Phaser.Button,
+	textCount?: Phaser.Text
+	key?: string;
+}
+
 export class ItemsBar {
 	timeText: Phaser.Text;
-	selectedItem: Item = null;
-	itemSprites: Array<Phaser.Sprite> = [];
+	selectedItem: ItemToPlace = null;
+	itemSpriteToPlace: Phaser.Sprite;
 
-	constructor(public items: Array<{item: Item, count: number}> = []){
+	constructor(public items: Array<ItemToPlace> = []){
 		timeStarted = Date.now();
 
 		game.add.sprite(1120, 0, 'items_bar');
@@ -25,7 +36,7 @@ export class ItemsBar {
 			} else {
 				playButton.loadTexture('button_play');
 				game.paused = true;
-				this.initSprites()
+				level.restart();
 			}
 		});
 
@@ -33,7 +44,8 @@ export class ItemsBar {
 		undoButton.events.onInputDown.add(() => {
 			playButton.loadTexture('button_play');
 			game.paused = true;
-			this.initSprites();
+			level.reset();
+			this.resetItems();
 		})
 
 		this.timeText = game.add.text(0, 0, "", {
@@ -47,18 +59,47 @@ export class ItemsBar {
 		this.updateTime();
 		setInterval(() => this.updateTime(), 1000);
 
-		this.initSprites();
+		this.items.forEach((itemToPlace, i) => {
+			itemToPlace.key = (new itemToPlace.item()).key;
+			itemToPlace.button = game.add.button(1170,265 + i * 80, itemToPlace.key);
+			itemToPlace.button.anchor.set(0.5,0.5);
+			itemToPlace.button.tint = 0xCCCCCC;
+			itemToPlace.button.onInputDown.add(() => this.selectItem(itemToPlace))
+			itemToPlace.textCount = game.add.text(1220, 250 + i * 80, `x ${itemToPlace.available}`,  {
+				font: "24px Arial",
+				fill : "#fff",
+				boundsAlignH: "center",
+				boundsAlignV: "middle"
+			})
+		});
+
+		this.resetItems();
+		this.initInput();
 	}
 
-	initSprites(){
-		this.clearSprites()
-	}
-
-	clearSprites(){
-		for(let sprite of this.itemSprites){
-			sprite.destroy();
+	resetItems(){
+		this.unselectItem();
+		for(let itemToPlace of this.items){
+			itemToPlace.count = itemToPlace.available;
+			itemToPlace.textCount.text = `x ${itemToPlace.count}`
 		}
-		this.itemSprites = [];
+	}
+
+	selectItem(itemToPlace: ItemToPlace){
+		if(this.selectedItem) this.selectedItem.button.tint = 0xCCCCCC;
+		this.selectedItem = itemToPlace;
+		this.selectedItem.button.tint = 0xFFFFFF;
+
+		if(this.itemSpriteToPlace) this.itemSpriteToPlace.destroy();
+		this.itemSpriteToPlace = game.add.sprite(0,0, itemToPlace.key);
+		this.itemSpriteToPlace.anchor.set(0.5, 0.5);
+		this.itemSpriteToPlace.visible = false;
+	}
+
+	unselectItem(){
+		if(this.selectedItem) this.selectedItem.button.tint = 0xCCCCCC;
+		if(this.itemSpriteToPlace) this.itemSpriteToPlace.destroy();
+		this.selectedItem = null;
 	}
 
 	updateTime(){
@@ -66,4 +107,38 @@ export class ItemsBar {
 		let [m, s] = [time.getMinutes(), time.getSeconds()]
 		this.timeText.text = `${m<10 ? '0'+m : m} : ${s<10 ? '0'+s : s}`
 	}
+
+	initInput(){
+		game.input.addMoveCallback((pointer, x, y) => {
+			if(this.itemSpriteToPlace && game.paused){
+				if(x > 0 && x < game.width - 160 - this.itemSpriteToPlace.width
+					&& y > 64 && y < game.height - this.itemSpriteToPlace.height){
+					this.itemSpriteToPlace.visible = true;
+					this.itemSpriteToPlace.x = x;
+					this.itemSpriteToPlace.y = y;
+				}
+			}
+		}, this);
+
+		game.input.onTap.add(event => {
+			if(this.itemSpriteToPlace && game.paused){
+				let {x,y} = event;
+				if(x > 0 && x < game.width - 160 - this.itemSpriteToPlace.width
+					&& y > 64 && y < game.height - this.itemSpriteToPlace.height){
+					const newItem = new this.selectedItem.item();
+					const playerSprite = newItem.spawn(x,y);
+					level.playerItems.push({
+						item: newItem,
+						position: {x,y},
+						sprite: playerSprite
+					});
+
+					this.selectedItem.count--;
+					this.selectedItem.textCount.text = `x ${this.selectedItem.count}`
+					this.unselectItem();
+				}
+			}
+		}, this);
+	}
 }
+

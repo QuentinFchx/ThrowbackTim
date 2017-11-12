@@ -1,10 +1,6 @@
 import {Ball} from "../Item";
 
-export function getBalls(){
-
-	const Football = new Ball('ball_football', 32)
-
-	return {
-		Football
-	}
+export class Football extends Ball {
+	key = 'ball_football';
+	radius = 32;
 }

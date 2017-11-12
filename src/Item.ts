@@ -4,7 +4,7 @@ export const DEBUG_HITBOX = false;
 
 export class Item {
 	spriteMaterial: Phaser.Physics.P2.Material;
-	key: String;
+	key: string;
 
 	constructor() {
 		this.spriteMaterial = game.physics.p2.createMaterial('spriteMaterial');
@@ -19,25 +19,15 @@ export class Item {
 }
 
 export class Ball extends Item {
-	constructor(public key: string, public bboxRadius: number) {
+	radius: Number = 16;
+
+	constructor() {
 		super();
 	}
 
 	spawn(x: number, y: number): Phaser.Sprite {
 		const sprite = super.spawn(x, y);
-		sprite.body.setCircle(this.bboxRadius);
-		return sprite;
-	}
-}
-
-export class Box extends Item {
-	constructor(public key: string, public width: number, public height: number) {
-		super();
-	}
-
-	spawn(x: number, y: number): Phaser.Sprite {
-		const sprite = super.spawn(x, y);
-		sprite.body.setRectangle(this.width, this.height);
+		sprite.body.setCircle(this.radius);
 		return sprite;
 	}
 }

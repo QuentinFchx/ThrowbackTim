@@ -25,8 +25,8 @@ export class Animal extends Item {
 		this.sprite.body.setRectangle(this.width, this.height);
 		this.sprite.update = () => this.update();
 
-		this.sprite.animations.add('walkLeft', [0,1,2], 3, true);
-		this.sprite.animations.add('walkRight', [3,4,5], 3, true);
+		this.sprite.animations.add('walkLeft', [0,1,2], 4, true);
+		this.sprite.animations.add('walkRight', [3,4,5], 4, true);
 		this.sprite.animations.add('idleLeft', [1]);
 		this.sprite.animations.add('idleRight', [4]);
 

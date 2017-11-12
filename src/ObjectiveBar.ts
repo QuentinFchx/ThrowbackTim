@@ -14,6 +14,6 @@ export class ObjectiveBar {
 			boundsAlignH: "center",
 			boundsAlignV: "middle",
 		});
-		this.text.setTextBounds(0, 0, 1120, 64);
+		this.text.setTextBounds(0, 4, 1120, 64);
 	}
 }

@@ -14,14 +14,13 @@ class Item {
     }
 }
 class Ball extends Item {
-    constructor(key, bboxRadius) {
+    constructor() {
         super();
-        this.key = key;
-        this.bboxRadius = bboxRadius;
+        this.radius = 16;
     }
     spawn(x, y) {
         const sprite = super.spawn(x, y);
-        sprite.body.setCircle(this.bboxRadius);
+        sprite.body.setCircle(this.radius);
         return sprite;
     }
 }
@@ -55,7 +54,6 @@ class ItemsBar {
     constructor(items = []) {
         this.items = items;
         this.selectedItem = null;
-        this.itemSprites = [];
         timeStarted = Date.now();
         game.add.sprite(1120, 0, 'items_bar');
         const playButton = game.add.sprite(1144, 12, 'button_play');
@@ -69,14 +67,15 @@ class ItemsBar {
             else {
                 playButton.loadTexture('button_play');
                 game.paused = true;
-                this.initSprites();
+                level.restart();
             }
         });
         undoButton.inputEnabled = true;
         undoButton.events.onInputDown.add(() => {
             playButton.loadTexture('button_play');
             game.paused = true;
-            this.initSprites();
+            level.reset();
+            this.resetItems();
         });
         this.timeText = game.add.text(0, 0, "", {
             font: "24px Arial",
@@ -87,21 +86,81 @@ class ItemsBar {
         this.timeText.setTextBounds(1151, 104, 96, 32);
         this.updateTime();
         setInterval(() => this.updateTime(), 1000);
-        this.initSprites();
+        this.items.forEach((itemToPlace, i) => {
+            itemToPlace.key = (new itemToPlace.item()).key;
+            itemToPlace.button = game.add.button(1170, 265 + i * 80, itemToPlace.key);
+            itemToPlace.button.anchor.set(0.5, 0.5);
+            itemToPlace.button.tint = 0xCCCCCC;
+            itemToPlace.button.onInputDown.add(() => this.selectItem(itemToPlace));
+            itemToPlace.textCount = game.add.text(1220, 250 + i * 80, `x ${itemToPlace.available}`, {
+                font: "24px Arial",
+                fill: "#fff",
+                boundsAlignH: "center",
+                boundsAlignV: "middle"
+            });
+        });
+        this.resetItems();
+        this.initInput();
     }
-    initSprites() {
-        this.clearSprites();
-    }
-    clearSprites() {
-        for (let sprite of this.itemSprites) {
-            sprite.destroy();
+    resetItems() {
+        this.unselectItem();
+        for (let itemToPlace of this.items) {
+            itemToPlace.count = itemToPlace.available;
+            itemToPlace.textCount.text = `x ${itemToPlace.count}`;
         }
-        this.itemSprites = [];
+    }
+    selectItem(itemToPlace) {
+        if (this.selectedItem)
+            this.selectedItem.button.tint = 0xCCCCCC;
+        this.selectedItem = itemToPlace;
+        this.selectedItem.button.tint = 0xFFFFFF;
+        if (this.itemSpriteToPlace)
+            this.itemSpriteToPlace.destroy();
+        this.itemSpriteToPlace = game.add.sprite(0, 0, itemToPlace.key);
+        this.itemSpriteToPlace.anchor.set(0.5, 0.5);
+        this.itemSpriteToPlace.visible = false;
+    }
+    unselectItem() {
+        if (this.selectedItem)
+            this.selectedItem.button.tint = 0xCCCCCC;
+        if (this.itemSpriteToPlace)
+            this.itemSpriteToPlace.destroy();
+        this.selectedItem = null;
     }
     updateTime() {
         const time = new Date(Date.now() - timeStarted);
         let [m, s] = [time.getMinutes(), time.getSeconds()];
         this.timeText.text = `${m < 10 ? '0' + m : m} : ${s < 10 ? '0' + s : s}`;
+    }
+    initInput() {
+        game.input.addMoveCallback((pointer, x, y) => {
+            if (this.itemSpriteToPlace && game.paused) {
+                if (x > 0 && x < game.width - 160 - this.itemSpriteToPlace.width
+                    && y > 64 && y < game.height - this.itemSpriteToPlace.height) {
+                    this.itemSpriteToPlace.visible = true;
+                    this.itemSpriteToPlace.x = x;
+                    this.itemSpriteToPlace.y = y;
+                }
+            }
+        }, this);
+        game.input.onTap.add(event => {
+            if (this.itemSpriteToPlace && game.paused) {
+                let { x, y } = event;
+                if (x > 0 && x < game.width - 160 - this.itemSpriteToPlace.width
+                    && y > 64 && y < game.height - this.itemSpriteToPlace.height) {
+                    const newItem = new this.selectedItem.item();
+                    const playerSprite = newItem.spawn(x, y);
+                    level.playerItems.push({
+                        item: newItem,
+                        position: { x, y },
+                        sprite: playerSprite
+                    });
+                    this.selectedItem.count--;
+                    this.selectedItem.textCount.text = `x ${this.selectedItem.count}`;
+                    this.unselectItem();
+                }
+            }
+        }, this);
     }
 }
 
@@ -115,28 +174,41 @@ class ObjectiveBar {
             boundsAlignH: "center",
             boundsAlignV: "middle",
         });
-        this.text.setTextBounds(0, 0, 1120, 64);
+        this.text.setTextBounds(0, 4, 1120, 64);
     }
 }
 
 class Level {
     constructor() {
-        this.sprites = [];
+        this.levelSprites = [];
+        this.playerItems = [];
         this.items = [];
     }
     initialize() {
         this.itemsBar = new ItemsBar(this.items);
         this.objectiveBar = new ObjectiveBar(this.objective);
-        this.initSprites();
+        this.restart();
     }
-    initSprites() {
-        this.clearSprites();
+    get sprites() {
+        return this.levelSprites.concat(this.playerItems.map(item => item.sprite));
     }
-    clearSprites() {
-        for (let sprite of this.sprites) {
+    reset() {
+        for (let itemPlaced of this.playerItems) {
+            itemPlaced.sprite.destroy();
+            itemPlaced.position = null;
+        }
+        this.playerItems = [];
+        this.restart();
+    }
+    restart() {
+        for (let sprite of this.levelSprites) {
             sprite.destroy();
         }
-        this.sprites = [];
+        this.levelSprites = [];
+        for (let itemPlaced of this.playerItems) {
+            itemPlaced.sprite.destroy();
+            itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
+        }
     }
     update() {
     }
@@ -152,13 +224,13 @@ class Level {
     }
 }
 
-function getBalls() {
-    const Football = new Ball('ball_football', 32);
-    return {
-        Football
-    };
+class Football extends Ball {
+    constructor(...args) {
+        super(...args);
+        this.key = 'ball_football';
+        this.radius = 32;
+    }
 }
-//# sourceMappingURL=balls.js.map
 
 class Bouncer extends StaticItem {
     constructor(key, polygon) {
@@ -225,8 +297,8 @@ class Animal extends Item {
         this.sprite = super.spawn(x, y);
         this.sprite.body.setRectangle(this.width, this.height);
         this.sprite.update = () => this.update();
-        this.sprite.animations.add('walkLeft', [0, 1, 2], 3, true);
-        this.sprite.animations.add('walkRight', [3, 4, 5], 3, true);
+        this.sprite.animations.add('walkLeft', [0, 1, 2], 4, true);
+        this.sprite.animations.add('walkRight', [3, 4, 5], 4, true);
         this.sprite.animations.add('idleLeft', [1]);
         this.sprite.animations.add('idleRight', [4]);
         this.idle();
@@ -282,13 +354,16 @@ class Level1 extends Level {
     constructor(...args) {
         super(...args);
         this.objective = "Faire tomber les 4 tortues dans le bac radioactif";
+        this.items = [
+            { item: Football, available: 1 },
+            { item: Pizza, available: 3 }
+        ];
     }
     initialize() {
         super.initialize();
     }
-    initSprites() {
-        super.initSprites();
-        const { Football } = getBalls();
+    restart() {
+        super.restart();
         const { MetalRamp1, MetalRamp2 } = getRamps();
         const { Bouncy } = getBouncers();
         const { Turtle } = getAnimals();
@@ -298,10 +373,7 @@ class Level1 extends Level {
         const michelangelo = new Turtle();
         leonardo.lookingDir = DIRECTION.LEFT;
         const pizza = new Pizza();
-        this.sprites.push(donatello.spawn(130, 170), leonardo.spawn(1016, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 520), Football.spawn(515, 315));
-        game.input.onTap.add((pointer) => {
-            this.sprites.push(pizza.spawn(pointer.x, pointer.y));
-        }, this);
+        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 520));
     }
 }
 
@@ -311,6 +383,7 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.image('logo', 'assets/phaser2.png');
         game$1.load.image('objective_bar', 'assets/objective_bar.png');
         game$1.load.image('items_bar', 'assets/items_bar.png');
+        game$1.load.image('star', 'assets/star_particle.png');
         game$1.load.image('city_tiles', 'assets/tiles/city_tiles.png');
         game$1.load.image('dirt_tiles', 'assets/tiles/dirt_tiles.png');
         game$1.load.image('industrial_tiles', 'assets/tiles/industrial_tiles.png');
@@ -372,7 +445,7 @@ function initPhysics() {
     game$1.physics.p2.world.defaultMaterial = worldMaterial;
     Object.assign(game$1.physics.p2.world.defaultContactMaterial, {
         friction: 0.5,
-        restitution: 0.65,
+        restitution: 0.35,
         stiffness: 1e7,
         relaxation: 3,
     });

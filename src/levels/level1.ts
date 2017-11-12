@@ -4,7 +4,7 @@ declare var game: Phaser.Game;
 
 import {Level} from '../Level';
 
-import {getBalls} from '../items/balls';
+import {Football} from '../items/balls';
 import {getBouncers} from '../items/bouncers';
 import {getRamps} from '../items/ramps';
 import {DIRECTION, getAnimals} from '../items/animals';
@@ -13,14 +13,18 @@ export class Level1 extends Level {
 
 	objective = "Faire tomber les 4 tortues dans le bac radioactif";
 
+	items = [
+		{ item: Football, available: 1 },
+		{ item: Pizza, available: 3 }
+	]
+
 	initialize() {
 		super.initialize();
 	}
 
-	initSprites() {
-		super.initSprites();
+	restart() {
+		super.restart();
 
-		const {Football} = getBalls();
 		const {MetalRamp1, MetalRamp2} = getRamps();
 		const {Bouncy} = getBouncers();
 		const {Turtle} = getAnimals();
@@ -34,19 +38,11 @@ export class Level1 extends Level {
 
 		const pizza = new Pizza();
 
-		this.sprites.push(
+		this.levelSprites.push(
 			donatello.spawn(130,170),
-			leonardo.spawn(1016,325),
+			leonardo.spawn(1040,325),
 			raphael.spawn(600,424),
-			michelangelo.spawn(130,520),
-			Football.spawn(515, 315)
+			michelangelo.spawn(130,520)
 		)
-
-
-		game.input.onTap.add((pointer: Phaser.Pointer) => {
-			this.sprites.push( pizza.spawn(pointer.x, pointer.y) );
-		}, this);
-
-
 	}
 }

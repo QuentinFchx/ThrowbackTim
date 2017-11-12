@@ -8,6 +8,8 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.image('objective_bar', 'assets/objective_bar.png');
 		game.load.image('items_bar', 'assets/items_bar.png');
 
+		game.load.image('star', 'assets/star_particle.png');
+
 		game.load.image('city_tiles', 'assets/tiles/city_tiles.png');
 		game.load.image('dirt_tiles', 'assets/tiles/dirt_tiles.png');
 		game.load.image('industrial_tiles', 'assets/tiles/industrial_tiles.png');
@@ -86,7 +88,7 @@ function initPhysics() {
 
 	Object.assign(game.physics.p2.world.defaultContactMaterial, {
 		friction: 0.5, // Friction to use in the contact of these two materials.
-		restitution: 0.65, // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
+		restitution: 0.35, // Restitution (i.e. how bouncy it is!) to use in the contact of these two materials.
 		stiffness: 1e7, // Stiffness of the resulting ContactEquation that this ContactMaterial generate.
 		relaxation: 3, // Relaxation of the resulting ContactEquation that this ContactMaterial generate.
 		// frictionStiffness: 1e7; // Stiffness of the resulting FrictionEquation that this ContactMaterial generate.

@@ -1,33 +1,52 @@
-import {Item} from "./Item";
-import {ItemsBar} from "./ItemsBar";
+import {ItemsBar, ItemToPlace} from "./ItemsBar";
 import {ObjectiveBar} from "./ObjectiveBar";
+import {Item} from "./Item";
 
 declare var game: Phaser.Game;
+
+interface ItemPlaced {
+	item: Item;
+	position: {x: number, y: number};
+	sprite?: Phaser.Sprite;
+}
 
 export class Level {
 
 	objective: string;
-	sprites: Array<Phaser.Sprite> = [];
+	levelSprites: Array<Phaser.Sprite> = [];
+	playerItems: Array<ItemPlaced> = [];
 	itemsBar: ItemsBar;
 	objectiveBar: ObjectiveBar;
-	items: Array<{item: Item, count: number}> = [];
+	items: Array<ItemToPlace> = [];
 
 	initialize(){
 		this.itemsBar = new ItemsBar(this.items);
 		this.objectiveBar = new ObjectiveBar(this.objective);
-
-		this.initSprites();
+		this.restart();
 	}
 
-	initSprites(){
-		this.clearSprites()
+	get sprites(): Array<Phaser.Sprite> {
+		return this.levelSprites.concat(this.playerItems.map(item => item.sprite));
 	}
 
-	clearSprites(){
-		for(let sprite of this.sprites){
+	reset(){
+		for(let itemPlaced of this.playerItems){
+			itemPlaced.sprite.destroy();
+			itemPlaced.position = null;
+		}
+		this.playerItems = [];
+		this.restart();
+	}
+
+	restart(){
+		for(let sprite of this.levelSprites){
 			sprite.destroy();
 		}
-		this.sprites = [];
+		this.levelSprites = [];
+		for(let itemPlaced of this.playerItems){
+			itemPlaced.sprite.destroy();
+			itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
+		}
 	}
 
 	update(){
