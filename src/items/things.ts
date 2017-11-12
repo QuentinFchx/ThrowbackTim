@@ -5,7 +5,7 @@ export class Pizza extends StaticItem {
 	width = 69;
 	height = 32;
 
-	spawn(x: number, y:number): Phaser.Sprite {
+	spawn(x: number, y: number): Phaser.Sprite {
 		const sprite = super.spawn(x, y);
 		sprite.body.setRectangle(this.width, this.height);
 		return sprite;

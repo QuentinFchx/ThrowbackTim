@@ -3,8 +3,8 @@ import { StaticItem } from '../Item';
 export class Bouncer extends StaticItem {
 	bounceFactor = 1.5;
 
-	constructor(key: string, public polygon: Array<Array<number>>) {
-		super(key);
+	constructor(public key: string, public polygon: Array<Array<number>>) {
+		super();
 	}
 
 	spawn(x: number, y: number): Phaser.Sprite {

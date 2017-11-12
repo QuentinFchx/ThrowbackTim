@@ -14,11 +14,6 @@ export class Animal extends Item {
 	sprite: Phaser.Sprite;
 	speed = 100;
 
-	constructor() {
-		super();
-
-	}
-
 	spawn(x: number, y: number): Phaser.Sprite {
 		this.sprite = super.spawn(x,y);
 		this.sprite.body.setRectangle(this.width, this.height);
@@ -45,8 +40,6 @@ export class Animal extends Item {
 	}
 
 	update(){
-		//game.debug.spriteInfo(this.sprite);
-
 		if(this.isWalking && this.sprite.body.angle > -30 && this.sprite.body.angle < 30){
 			if(this.lookingDir === DIRECTION.RIGHT){
 				this.sprite.body.moveRight(this.speed)

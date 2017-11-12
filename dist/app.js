@@ -257,7 +257,8 @@ class BowlingBall extends Ball {
 
 class Bouncer extends StaticItem {
     constructor(key, polygon) {
-        super(key);
+        super();
+        this.key = key;
         this.polygon = polygon;
         this.bounceFactor = 1.5;
     }
@@ -332,17 +333,32 @@ const extractContactPoint = handler => function (bodyA, bodyB, shapeA, shapeB, e
     let cy = game.physics.p2.mpxi(pos[1] + pt[1]);
     return handler.call(this, { x: cx, y: cy });
 };
-
 function removeInArray(arr, elm) {
     arr.splice(arr.indexOf(elm), 1);
     return arr;
 }
 
+function inArray(arr, elm) {
+    return arr.indexOf(elm) >= 0; // TS, donne moi includes() !!!
+}
+function overlap(sprite, rect) {
+    let bounds = sprite.getBounds();
+    return bounds.x + bounds.width > rect.x
+        && bounds.x < rect.x + rect.width
+        && bounds.y + bounds.height > rect.y
+        && bounds.y < rect.y + rect.height;
+}
+function calcDistance(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
+}
+function calcAngle(x1, y1, x2, y2) {
+    return Math.atan2(y2 - y1, x2 - x1);
+}
 //# sourceMappingURL=helpers.js.map
 
 class Animal extends Item {
-    constructor() {
-        super();
+    constructor(...args) {
+        super(...args);
         this.lookingDir = DIRECTION.RIGHT;
         this.isWalking = false;
         this.speed = 100;
@@ -367,7 +383,6 @@ class Animal extends Item {
         this.isWalking = false;
     }
     update() {
-        //game.debug.spriteInfo(this.sprite);
         if (this.isWalking && this.sprite.body.angle > -30 && this.sprite.body.angle < 30) {
             if (this.lookingDir === DIRECTION.RIGHT) {
                 this.sprite.body.moveRight(this.speed);
@@ -477,7 +492,6 @@ class Laser extends Machine {
     switchPower(on) {
         super.switchPower(on);
         this.sprite.frame = Laser.FRAMES[this.direction][on ? 0 : 1];
-        this.sprite.anchor.set(0, 0);
         let isHorizontal = this.direction === DIRECTION4.LEFT || this.direction === DIRECTION4.RIGHT;
         if (on) {
             this.ray = game.add.sprite(0, 0, 'laser_ray');
@@ -485,16 +499,14 @@ class Laser extends Machine {
             this.ray.frame = Laser.RAY_FRAMES[this.laserColor][isHorizontal ? 1 : 0];
             if (isHorizontal) {
                 this.ray.crop(new Phaser.Rectangle(0, 12, 32, 8), false);
-                this.ray.y = this.sprite.y + 12;
-                game.debug.spriteInfo(this.ray, 10, 20);
-                console.log(this.ray);
+                this.ray.y = this.sprite.y - 4;
             }
             if (this.direction === DIRECTION4.LEFT) {
                 this.ray.x = 0;
-                this.ray.width = this.sprite.x;
+                this.ray.width = this.sprite.x - this.sprite.offsetX;
             }
             if (this.direction === DIRECTION4.RIGHT) {
-                this.ray.x = this.sprite.x + this.sprite.width;
+                this.ray.x = this.sprite.x - this.sprite.offsetX + this.sprite.width;
                 this.ray.width = game.world.width - this.ray.x;
             }
             this.updateRay();
@@ -510,7 +522,7 @@ class Laser extends Machine {
     }
     updateRay() {
         if (this.isPowered && this.ray) {
-            let errorMargin = 5;
+            let errorMargin = 4;
             if (this.direction === DIRECTION4.RIGHT) {
                 this.ray.width = game.world.width - this.ray.x;
                 let overlappingSprites = level.sprites.filter(s => s.x > this.ray.x
@@ -522,7 +534,7 @@ class Laser extends Machine {
                 this.ray.width = obstacleX - this.ray.x + errorMargin;
             }
             if (this.direction === DIRECTION4.LEFT) {
-                this.ray.width = this.sprite.x;
+                this.ray.width = this.sprite.x - this.sprite.position.x;
                 this.ray.x = 0;
                 let overlappingSprites = level.sprites.filter(s => s.x < this.sprite.x
                     && s !== this.ray
@@ -531,7 +543,7 @@ class Laser extends Machine {
                 let closestObstacle = overlappingSprites.sort((a, b) => b.x - a.x)[0];
                 let obstacleX = closestObstacle ? closestObstacle.x + closestObstacle.width - closestObstacle.offsetX : 0;
                 this.ray.x = obstacleX - errorMargin;
-                this.ray.width = this.sprite.x - this.ray.x + errorMargin;
+                this.ray.width = this.sprite.x - this.sprite.offsetX - this.ray.x + errorMargin;
             }
         }
     }
@@ -553,6 +565,79 @@ Laser.RAY_FRAMES = {
     [COLOR.RED]: [2, 6],
     [COLOR.BLUE]: [3, 7]
 };
+
+const FLAMMABLES = ['laser_ray'];
+function explode(cx, cy, radius, strength) {
+    /*Grab all of the objects in a predetermined radius of the explosion by looping over your game objects and using Circle.contains to see if their position lies within the circle. You could maybe make use of an overlap test with a square body of the same size as the circle to make use of the QuadTree optimisation if you have lots of objects in your world.
+        For each object, check the distance and the angle (in radians) from the explosion's centre point.
+    Using the angle and the inverse of the distance, perform some simple trigonometry to determine which direction and with what force you need to add to an object (optionally taking into account mass):
+    */
+    let explosion = game.add.sprite(cx, cy, 'explosion');
+    explosion.anchor.set(0.5, 0.5);
+    explosion.animations.add('explosion');
+    explosion.scale.set(radius / 64, radius / 64);
+    explosion.play('explosion', 30, false, true);
+    let explosionCircle = new Phaser.Circle(cx, cy, radius * 2);
+    for (let sprite of level.sprites) {
+        if (Phaser.Circle.contains(explosionCircle, sprite.centerX, sprite.centerY)) {
+            let distance = calcDistance(cx, cy, sprite.centerX, sprite.centerY);
+            let angle = calcAngle(cx, cy, sprite.centerX, sprite.centerY);
+            let force = strength * (radius - distance) / sprite.body.mass;
+            sprite.body.velocity.x += Math.cos(angle) * force;
+            sprite.body.velocity.y += Math.sin(angle) * force;
+        }
+    }
+}
+class InflammableItem extends Item {
+    spawn(x, y) {
+        this.sprite = super.spawn(x, y);
+        this.sprite.update = () => this.update();
+        this.isLight = false;
+        this.wick = new Phaser.Rectangle(0, 0, this.sprite.height, this.sprite.width);
+        return this.sprite;
+    }
+    update() {
+        const wick = new Phaser.Rectangle(this.sprite.x + this.wick.x, this.sprite.y + this.wick.y, this.wick.width, this.wick.height);
+        if (!this.isLight && level.sprites.some(s => {
+            return inArray(FLAMMABLES, s.key) && overlap(s, wick);
+        })) {
+            this.fire();
+        }
+    }
+    fire() {
+        this.isLight = true;
+    }
+}
+class Rocket extends InflammableItem {
+    constructor() {
+        super();
+        this.key = 'rocket';
+        this.speed = 0;
+        this.wick = new Phaser.Rectangle(0, 100, 48, 28);
+    }
+    spawn(x, y) {
+        super.spawn(x, y);
+        this.sprite.body.onBeginContact.add(() => this.isLight && this.explode());
+        this.sprite.animations.add("explosion");
+        return this.sprite;
+    }
+    update() {
+        super.update();
+        if (this.isLight) {
+            this.speed += 25;
+            this.sprite.body.moveUp(this.speed);
+        }
+    }
+    fire() {
+        super.fire();
+        this.sprite.frame = 1;
+    }
+    explode() {
+        explode(this.sprite.x, this.sprite.y, 120, 100);
+        removeInArray(level.sprites, this.sprite);
+        this.sprite.kill();
+    }
+}
 
 class Level1 extends Level {
     constructor(...args) {
@@ -582,7 +667,8 @@ class Level1 extends Level {
         const laser = new Laser();
         laser.direction = DIRECTION4.LEFT;
         laser.powerSource = powerSwitch;
-        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 520), powerSwitch.spawn(640, 848), laser.spawn(590, 832));
+        const rocket = new Rocket();
+        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 420), powerSwitch.spawn(640, 848), laser.spawn(600, 848), rocket.spawn(80, 800));
     }
 }
 
@@ -614,6 +700,8 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.spritesheet('powerswitch', 'assets/sprites/powerswitch.png', 32, 32);
         game$1.load.spritesheet('laser_machine', 'assets/sprites/laser_machine.png', 32, 32);
         game$1.load.spritesheet('laser_ray', 'assets/sprites/laser.png', 32, 32);
+        game$1.load.spritesheet('rocket', 'assets/sprites/rocket.png', 64, 128);
+        game$1.load.spritesheet('explosion', 'assets/sprites/explode.png', 128, 128);
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {

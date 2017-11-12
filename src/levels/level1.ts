@@ -10,6 +10,7 @@ import {getRamps} from '../items/ramps';
 import {getAnimals} from '../items/animals';
 import {Laser, PowerSwitch} from "../items/machines";
 import {DIRECTION, DIRECTION4} from "../helpers";
+import {Rocket} from "../items/inflammable";
 
 export class Level1 extends Level {
 
@@ -45,13 +46,16 @@ export class Level1 extends Level {
 		laser.direction = DIRECTION4.LEFT;
 		laser.powerSource = powerSwitch;
 
+		const rocket = new Rocket();
+
 		this.levelSprites.push(
 			donatello.spawn(130,170),
 			leonardo.spawn(1040,325),
 			raphael.spawn(600,424),
-			michelangelo.spawn(130,520),
+			michelangelo.spawn(130,420),
 			powerSwitch.spawn(640,848),
-			laser.spawn(590,832)
+			laser.spawn(600,848),
+			rocket.spawn(80,800)
 		)
 	}
 }

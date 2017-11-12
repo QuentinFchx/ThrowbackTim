@@ -8,3 +8,4 @@ interface Window {
 declare var game: Phaser.Game;
 declare var map: Phaser.Tilemap;
 declare var level: Level;
+declare var explosions: Phaser.Group;

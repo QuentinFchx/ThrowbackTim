@@ -97,7 +97,6 @@ export class Laser extends Machine {
 	switchPower(on: boolean){
 		super.switchPower(on);
 		this.sprite.frame = Laser.FRAMES[this.direction][on ? 0 : 1]
-		this.sprite.anchor.set(0,0);
 		let isHorizontal = this.direction === DIRECTION4.LEFT || this.direction === DIRECTION4.RIGHT;
 		if(on){
 			this.ray = game.add.sprite(0,0, 'laser_ray');
@@ -106,17 +105,15 @@ export class Laser extends Machine {
 
 			if(isHorizontal){
 				this.ray.crop(new Phaser.Rectangle(0,12,32,8),false)
-				this.ray.y = this.sprite.y + 12;
-				game.debug.spriteInfo(this.ray, 10, 20);
-				console.log(this.ray);
+				this.ray.y = this.sprite.y - 4;
 			}
 
 			if(this.direction === DIRECTION4.LEFT){
 				this.ray.x = 0;
-				this.ray.width = this.sprite.x;
+				this.ray.width = this.sprite.x - this.sprite.offsetX;
 			}
 			if(this.direction === DIRECTION4.RIGHT){
-				this.ray.x = this.sprite.x + this.sprite.width;
+				this.ray.x = this.sprite.x - this.sprite.offsetX + this.sprite.width;
 				this.ray.width = game.world.width - this.ray.x;
 			}
 			this.updateRay()
@@ -133,7 +130,7 @@ export class Laser extends Machine {
 
 	updateRay() {
 		if (this.isPowered && this.ray) {
-			let errorMargin = 5;
+			let errorMargin = 4;
 			if (this.direction === DIRECTION4.RIGHT) {
 				this.ray.width = game.world.width - this.ray.x;
 				let overlappingSprites = level.sprites.filter(
@@ -147,7 +144,7 @@ export class Laser extends Machine {
 				this.ray.width = obstacleX - this.ray.x + errorMargin;
 			}
 			if (this.direction === DIRECTION4.LEFT) {
-				this.ray.width = this.sprite.x;
+				this.ray.width = this.sprite.x - this.sprite.position.x;
 				this.ray.x = 0;
 				let overlappingSprites = level.sprites.filter(
 					s => s.x < this.sprite.x
@@ -158,7 +155,7 @@ export class Laser extends Machine {
 				let closestObstacle = overlappingSprites.sort((a,b) => b.x - a.x)[0]
 				let obstacleX = closestObstacle ? closestObstacle.x + closestObstacle.width - closestObstacle.offsetX : 0
 				this.ray.x = obstacleX  - errorMargin;
-				this.ray.width = this.sprite.x - this.ray.x + errorMargin;
+				this.ray.width = this.sprite.x - this.sprite.offsetX - this.ray.x + errorMargin;
 			}
 		}
 	}

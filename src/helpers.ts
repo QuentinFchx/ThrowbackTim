@@ -14,13 +14,6 @@ export const extractContactPoint = handler => function(bodyA,bodyB,shapeA,shapeB
 	return handler.call(this, { x: cx, y: cy })
 }
 
-export function getAbsolutePos(sprite){
-	return {
-		x:sprite.x - sprite.anchor.x*sprite.width,
-		y:sprite.y - sprite.anchor.y*sprite.height
-	}
-}
-
 export function removeInArray(arr,elm){
 	arr.splice(arr.indexOf(elm), 1)
 	return arr
@@ -28,4 +21,24 @@ export function removeInArray(arr,elm){
 
 export function removeAllInArray(arr,elm){
 	return arr.filter(e => e!== elm)
+}
+
+export function inArray(arr, elm){
+	return arr.indexOf(elm) >= 0 // TS, donne moi includes() !!!
+}
+
+export function overlap(sprite, rect){
+	let bounds = sprite.getBounds();
+	return bounds.x + bounds.width > rect.x
+		&& bounds.x < rect.x + rect.width
+		&& bounds.y + bounds.height > rect.y
+		&& bounds.y < rect.y + rect.height
+}
+
+export function calcDistance(x1, y1, x2, y2){
+	return Math.sqrt( Math.pow((x1-x2), 2) + Math.pow((y1-y2), 2) );
+}
+
+export function calcAngle(x1, y1, x2, y2){
+	return Math.atan2(y2 - y1, x2 - x1);
 }
