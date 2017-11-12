@@ -22,6 +22,10 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.image('button_undo', 'assets/sprites/button_undo.png');
 
 		game.load.image('ball_football', 'assets/sprites/ball_football.png');
+		game.load.image('ball_tennis', 'assets/sprites/ball_tennis.png');
+		game.load.image('ball_bowling', 'assets/sprites/ball_bowling.png');
+		game.load.image('ball_basket', 'assets/sprites/ball_basket.png');
+
 		game.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
 		game.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
 		game.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');

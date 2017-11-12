@@ -17,10 +17,12 @@ class Ball extends Item {
     constructor() {
         super();
         this.radius = 16;
+        this.mass = 1;
     }
     spawn(x, y) {
         const sprite = super.spawn(x, y);
         sprite.body.setCircle(this.radius);
+        sprite.body.mass = this.mass;
         return sprite;
     }
 }
@@ -234,11 +236,12 @@ class Level {
     }
 }
 
-class Football extends Ball {
+class BowlingBall extends Ball {
     constructor(...args) {
         super(...args);
-        this.key = 'ball_football';
+        this.key = 'ball_bowling';
         this.radius = 32;
+        this.mass = 5;
     }
 }
 
@@ -365,7 +368,7 @@ class Level1 extends Level {
         super(...args);
         this.objective = "Faire tomber les 4 tortues dans le bac radioactif";
         this.items = [
-            { item: Football, available: 1 },
+            { item: BowlingBall, available: 1 },
             { item: Pizza, available: 3 }
         ];
     }
@@ -404,6 +407,9 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.image('button_restart', 'assets/sprites/button_restart.png');
         game$1.load.image('button_undo', 'assets/sprites/button_undo.png');
         game$1.load.image('ball_football', 'assets/sprites/ball_football.png');
+        game$1.load.image('ball_tennis', 'assets/sprites/ball_tennis.png');
+        game$1.load.image('ball_bowling', 'assets/sprites/ball_bowling.png');
+        game$1.load.image('ball_basket', 'assets/sprites/ball_basket.png');
         game$1.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
         game$1.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
         game$1.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');

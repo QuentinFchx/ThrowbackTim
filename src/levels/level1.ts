@@ -4,7 +4,7 @@ declare var game: Phaser.Game;
 
 import {Level} from '../Level';
 
-import {Football} from '../items/balls';
+import {BowlingBall, Football} from '../items/balls';
 import {getBouncers} from '../items/bouncers';
 import {getRamps} from '../items/ramps';
 import {DIRECTION, getAnimals} from '../items/animals';
@@ -14,7 +14,7 @@ export class Level1 extends Level {
 	objective = "Faire tomber les 4 tortues dans le bac radioactif";
 
 	items = [
-		{ item: Football, available: 1 },
+		{ item: BowlingBall, available: 1 },
 		{ item: Pizza, available: 3 }
 	]
 
