@@ -110,8 +110,9 @@ class ItemsBar {
         }
     }
     selectItem(itemToPlace) {
-        if (this.selectedItem)
-            this.selectedItem.button.tint = 0xCCCCCC;
+        if (!game.paused || itemToPlace.count <= 0)
+            return;
+        this.unselectItem();
         this.selectedItem = itemToPlace;
         this.selectedItem.button.tint = 0xFFFFFF;
         if (this.itemSpriteToPlace)
@@ -135,19 +136,28 @@ class ItemsBar {
     initInput() {
         game.input.addMoveCallback((pointer, x, y) => {
             if (this.itemSpriteToPlace && game.paused) {
-                if (x > 0 && x < game.width - 160 - this.itemSpriteToPlace.width
-                    && y > 64 && y < game.height - this.itemSpriteToPlace.height) {
+                const { width, height } = this.itemSpriteToPlace;
+                if (x > width / 2
+                    && x < (game.width - 160 - width / 2)
+                    && y > (64 + height / 2)
+                    && y < game.height - height / 2) {
                     this.itemSpriteToPlace.visible = true;
                     this.itemSpriteToPlace.x = x;
                     this.itemSpriteToPlace.y = y;
+                }
+                else {
+                    this.itemSpriteToPlace.visible = false;
                 }
             }
         }, this);
         game.input.onTap.add(event => {
             if (this.itemSpriteToPlace && game.paused) {
                 let { x, y } = event;
-                if (x > 0 && x < game.width - 160 - this.itemSpriteToPlace.width
-                    && y > 64 && y < game.height - this.itemSpriteToPlace.height) {
+                const { width, height } = this.itemSpriteToPlace;
+                if (x > width / 2
+                    && x < (game.width - 160 - width / 2)
+                    && y > (64 + height / 2)
+                    && y < game.height - height / 2) {
                     const newItem = new this.selectedItem.item();
                     const playerSprite = newItem.spawn(x, y);
                     level.playerItems.push({
