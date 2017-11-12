@@ -8,6 +8,7 @@ import {BowlingBall, Football} from '../items/balls';
 import {getBouncers} from '../items/bouncers';
 import {getRamps} from '../items/ramps';
 import {DIRECTION, getAnimals} from '../items/animals';
+import {PowerSwitch} from "../items/machines";
 
 export class Level1 extends Level {
 
@@ -36,13 +37,16 @@ export class Level1 extends Level {
 		const michelangelo = new Turtle();
 		leonardo.lookingDir = DIRECTION.LEFT;
 
-		const pizza = new Pizza();
+		const powerSwitch = new PowerSwitch();
+		powerSwitch.direction = DIRECTION.RIGHT;
 
 		this.levelSprites.push(
 			donatello.spawn(130,170),
 			leonardo.spawn(1040,325),
 			raphael.spawn(600,424),
-			michelangelo.spawn(130,520)
+			michelangelo.spawn(130,520),
+
+			powerSwitch.spawn(640,848)
 		)
 	}
 }

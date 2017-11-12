@@ -363,6 +363,50 @@ function getAnimals() {
     };
 }
 
+function getContactPoint(bodyA, bodyB, shapeA, shapeB, equation) {
+    let pos = equation[0].bodyA.position;
+    let pt = equation[0].contactPointA;
+    let cx = game.physics.p2.mpxi(pos[0] + pt[0]);
+    let cy = game.physics.p2.mpxi(pos[1] + pt[1]);
+    return { x: cx, y: cy };
+}
+//# sourceMappingURL=helpers.js.map
+
+class PowerSource extends StaticItem {
+    constructor(...args) {
+        super(...args);
+        this.isPowered = false;
+    }
+}
+class PowerSwitch extends PowerSource {
+    constructor(...args) {
+        super(...args);
+        this.key = "powerswitch";
+        this.direction = DIRECTION.RIGHT;
+    }
+    spawn(x, y) {
+        this.sprite = super.spawn(x, y);
+        this.sprite.body.setRectangle(32, 18, 0, 8);
+        this.sprite.body.onBeginContact.add((...args) => this.onContact(getContactPoint(...args)), this);
+        return this.sprite;
+    }
+    onContact(contactPoint) {
+        let { x } = contactPoint;
+        let errorMargin = 5;
+        const isFromLeftSide = x < this.sprite.position.x - this.sprite.width / 2 + errorMargin;
+        const isFromRightSide = x > this.sprite.position.x + this.sprite.width / 2 - errorMargin;
+        if ((isFromLeftSide && this.direction === DIRECTION.LEFT)
+            || (isFromRightSide && this.direction === DIRECTION.RIGHT)) {
+            this.switchDirection();
+        }
+    }
+    switchDirection() {
+        this.isPowered = !this.isPowered;
+        this.direction = (this.direction === DIRECTION.LEFT ? DIRECTION.RIGHT : DIRECTION.LEFT);
+        this.sprite.frame = (this.direction === DIRECTION.LEFT ? 1 : 0);
+    }
+}
+
 class Level1 extends Level {
     constructor(...args) {
         super(...args);
@@ -385,8 +429,9 @@ class Level1 extends Level {
         const raphael = new Turtle();
         const michelangelo = new Turtle();
         leonardo.lookingDir = DIRECTION.LEFT;
-        const pizza = new Pizza();
-        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 520));
+        const powerSwitch = new PowerSwitch();
+        powerSwitch.direction = DIRECTION.RIGHT;
+        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 520), powerSwitch.spawn(640, 848));
     }
 }
 
@@ -415,6 +460,7 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');
         game$1.load.image('pizza', 'assets/sprites/pizza.png');
         game$1.load.spritesheet('turtle', 'assets/sprites/turtle_sheet.png', 45, 32);
+        game$1.load.spritesheet('powerswitch', 'assets/sprites/powerswitch.png', 32, 32);
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {

@@ -29,9 +29,11 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.image('metal_ramp1', 'assets/sprites/metal_ramp1.png');
 		game.load.image('metal_ramp2', 'assets/sprites/metal_ramp2.png');
 		game.load.image('metal_pipe1', 'assets/sprites/metal_pipe1.png');
+
 		game.load.image('pizza', 'assets/sprites/pizza.png');
 
 		game.load.spritesheet('turtle', 'assets/sprites/turtle_sheet.png', 45, 32);
+		game.load.spritesheet('powerswitch', 'assets/sprites/powerswitch.png', 32, 32);
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
