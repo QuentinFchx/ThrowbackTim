@@ -1,10 +1,9 @@
 import {Item} from "../Item";
 import {Level} from "../Level";
+import {DIRECTION} from "../helpers";
 
 declare var level: Level;
 declare var game: Phaser.Game;
-
-export enum DIRECTION { LEFT, RIGHT };
 
 export class Animal extends Item {
 	lookingDir: DIRECTION = DIRECTION.RIGHT;

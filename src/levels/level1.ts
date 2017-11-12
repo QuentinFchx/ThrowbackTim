@@ -7,8 +7,9 @@ import {Level} from '../Level';
 import {BowlingBall, Football} from '../items/balls';
 import {getBouncers} from '../items/bouncers';
 import {getRamps} from '../items/ramps';
-import {DIRECTION, getAnimals} from '../items/animals';
-import {PowerSwitch} from "../items/machines";
+import {getAnimals} from '../items/animals';
+import {Laser, PowerSwitch} from "../items/machines";
+import {DIRECTION, DIRECTION4} from "../helpers";
 
 export class Level1 extends Level {
 
@@ -16,6 +17,7 @@ export class Level1 extends Level {
 
 	items = [
 		{ item: BowlingBall, available: 1 },
+		{ item: Football, available: 5 },
 		{ item: Pizza, available: 3 }
 	]
 
@@ -39,14 +41,17 @@ export class Level1 extends Level {
 
 		const powerSwitch = new PowerSwitch();
 		powerSwitch.direction = DIRECTION.RIGHT;
+		const laser = new Laser();
+		laser.direction = DIRECTION4.LEFT;
+		laser.powerSource = powerSwitch;
 
 		this.levelSprites.push(
 			donatello.spawn(130,170),
 			leonardo.spawn(1040,325),
 			raphael.spawn(600,424),
 			michelangelo.spawn(130,520),
-
-			powerSwitch.spawn(640,848)
+			powerSwitch.spawn(640,848),
+			laser.spawn(590,832)
 		)
 	}
 }

@@ -34,6 +34,8 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 
 		game.load.spritesheet('turtle', 'assets/sprites/turtle_sheet.png', 45, 32);
 		game.load.spritesheet('powerswitch', 'assets/sprites/powerswitch.png', 32, 32);
+		game.load.spritesheet('laser_machine', 'assets/sprites/laser_machine.png', 32, 32);
+		game.load.spritesheet('laser_ray', 'assets/sprites/laser.png', 32, 32);
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
