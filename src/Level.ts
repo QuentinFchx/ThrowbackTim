@@ -51,6 +51,7 @@ export class Level {
 			itemPlaced.sprite.inputEnabled = true;
 			itemPlaced.sprite.input.enableDrag();
 			itemPlaced.sprite.events.onDragStop.add((sprite, { x, y }: { x: number, y: number }) => {
+				itemPlaced.sprite.reset(x, y);
 				itemPlaced.position = { x, y };
 			}, this);
 		}
