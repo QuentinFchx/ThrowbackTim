@@ -34,6 +34,7 @@ export class ItemsBar {
 			if (game.paused) {
 				playButton.loadTexture('button_restart');
 				game.paused = false;
+				level.start();
 			} else {
 				playButton.loadTexture('button_play');
 				game.paused = true;

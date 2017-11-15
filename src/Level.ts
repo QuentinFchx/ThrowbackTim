@@ -56,6 +56,12 @@ export class Level {
 		}
 	}
 
+	start() {
+		for (let itemPlaced of this.playerItems) {
+			itemPlaced.sprite.inputEnabled = false;
+		}
+	}
+
 	update() {
 
 	}
