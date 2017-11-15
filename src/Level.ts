@@ -1,12 +1,12 @@
-import {ItemsBar, ItemToPlace} from "./ItemsBar";
-import {ObjectiveBar} from "./ObjectiveBar";
-import {Item} from "./Item";
+import { ItemsBar, ItemToPlace } from './ItemsBar';
+import { ObjectiveBar } from './ObjectiveBar';
+import { Item } from './Item';
 
 declare var game: Phaser.Game;
 
 interface ItemPlaced {
 	item: Item;
-	position: {x: number, y: number};
+	position: { x: number, y: number };
 	sprite?: Phaser.Sprite;
 }
 
@@ -19,7 +19,7 @@ export class Level {
 	objectiveBar: ObjectiveBar;
 	items: Array<ItemToPlace> = [];
 
-	initialize(){
+	initialize() {
 		this.itemsBar = new ItemsBar(this.items);
 		this.objectiveBar = new ObjectiveBar(this.objective);
 		this.restart();
@@ -29,8 +29,8 @@ export class Level {
 		return this.levelSprites.concat(this.playerItems.map(item => item.sprite));
 	}
 
-	reset(){
-		for(let itemPlaced of this.playerItems){
+	reset() {
+		for (let itemPlaced of this.playerItems) {
 			itemPlaced.sprite.destroy();
 			itemPlaced.position = null;
 		}
@@ -38,30 +38,37 @@ export class Level {
 		this.restart();
 	}
 
-	restart(){
-		for(let sprite of this.levelSprites){
+	restart() {
+		for (let sprite of this.levelSprites) {
 			sprite.destroy();
 		}
 		this.levelSprites = [];
-		for(let itemPlaced of this.playerItems){
-			itemPlaced.sprite.destroy();
+
+		for (let itemPlaced of this.playerItems) {
+			if (itemPlaced.sprite) itemPlaced.sprite.destroy();
 			itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
+
+			itemPlaced.sprite.inputEnabled = true;
+			itemPlaced.sprite.input.enableDrag();
+			itemPlaced.sprite.events.onDragStop.add((sprite, { x, y }: { x: number, y: number }) => {
+				itemPlaced.position = { x, y };
+			}, this);
 		}
 	}
 
-	update(){
+	update() {
 
 	}
 
-	getSpritesInZone(x1,y1,x2,y2){
-		if(x2 < x1) [x1,x2] = [x2,x1];
-		if(y2 < y1) [y1,y2] = [y2,y1];
+	getSpritesInZone(x1, y1, x2, y2) {
+		if (x2 < x1)[x1, x2] = [x2, x1];
+		if (y2 < y1)[y1, y2] = [y2, y1];
 
 		return this.sprites.filter(sprite =>
 			sprite.position.x + sprite.width >= x1
 			&& sprite.position.x <= x2
 			&& sprite.position.y + sprite.height >= y1
 			&& sprite.position.y <= y2
-		)
+		);
 	}
 }

@@ -107,15 +107,16 @@ export class ItemsBar {
 
 	spawnItem(item: ItemToPlace, x: number, y: number) {
 		const newItem = new item.item();
-		const playerSprite = newItem.spawn(x, y);
-		level.playerItems.push({
+		const playerItem = {
 			item: newItem,
-			position: { x, y },
-			sprite: playerSprite
-		});
+			position: { x, y }
+		};
+		level.playerItems.push(playerItem);
 
 		item.count--;
 		item.textCount.text = `x ${item.count}`;
+
+		level.restart();
 	}
 
 	updateTime() {
