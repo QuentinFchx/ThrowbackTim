@@ -1,14 +1,8 @@
-import { ItemsBar, ItemToPlace } from './ItemsBar';
+import {ItemPlaced, ItemsBar, ItemToPlace} from './ItemsBar';
 import { ObjectiveBar } from './ObjectiveBar';
 import { Item } from './Item';
 
 declare var game: Phaser.Game;
-
-interface ItemPlaced {
-	item: Item;
-	position: { x: number, y: number };
-	sprite?: Phaser.Sprite;
-}
 
 export class Level {
 
@@ -45,21 +39,7 @@ export class Level {
 		this.levelSprites = [];
 
 		for (let itemPlaced of this.playerItems) {
-			if (itemPlaced.sprite) itemPlaced.sprite.destroy();
-			itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
-
-			itemPlaced.sprite.inputEnabled = true;
-			itemPlaced.sprite.input.enableDrag();
-			itemPlaced.sprite.events.onDragStop.add((sprite, { x, y }: { x: number, y: number }) => {
-				itemPlaced.sprite.reset(x, y);
-				itemPlaced.position = { x, y };
-			}, this);
-		}
-	}
-
-	start() {
-		for (let itemPlaced of this.playerItems) {
-			itemPlaced.sprite.inputEnabled = false;
+			this.itemsBar.spawnItem(itemPlaced);
 		}
 	}
 

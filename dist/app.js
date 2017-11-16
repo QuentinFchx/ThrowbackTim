@@ -53,7 +53,62 @@ class Pizza extends StaticItem {
     }
 }
 
-var timeStarted = 0;
+var DIRECTION;
+(function (DIRECTION) {
+    DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
+    DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
+})(DIRECTION || (DIRECTION = {}));
+var DIRECTION4;
+(function (DIRECTION4) {
+    DIRECTION4[DIRECTION4["LEFT"] = 0] = "LEFT";
+    DIRECTION4[DIRECTION4["RIGHT"] = 1] = "RIGHT";
+    DIRECTION4[DIRECTION4["TOP"] = 2] = "TOP";
+    DIRECTION4[DIRECTION4["BOTTOM"] = 3] = "BOTTOM";
+})(DIRECTION4 || (DIRECTION4 = {}));
+var COLOR;
+(function (COLOR) {
+    COLOR[COLOR["RED"] = 0] = "RED";
+    COLOR[COLOR["GREEN"] = 1] = "GREEN";
+    COLOR[COLOR["BLUE"] = 2] = "BLUE";
+    COLOR[COLOR["YELLOW"] = 3] = "YELLOW";
+})(COLOR || (COLOR = {}));
+const extractContactPoint = handler => function (bodyA, bodyB, shapeA, shapeB, equation) {
+    const pos = equation[0].bodyA.position;
+    const pt = equation[0].contactPointA;
+    const cx = game.physics.p2.mpxi(pos[0] + pt[0]);
+    const cy = game.physics.p2.mpxi(pos[1] + pt[1]);
+    return handler.call(this, { x: cx, y: cy });
+};
+function removeInArray(arr, elm) {
+    arr.splice(arr.indexOf(elm), 1);
+    return arr;
+}
+
+function inArray(arr, elm) {
+    return arr.indexOf(elm) >= 0; // TS, donne moi includes() !!!
+}
+function overlap(sprite, rect) {
+    const bounds = sprite.getBounds();
+    return bounds.x + bounds.width > rect.x
+        && bounds.x < rect.x + rect.width
+        && bounds.y + bounds.height > rect.y
+        && bounds.y < rect.y + rect.height;
+}
+function calcDistance(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
+}
+function calcAngle(x1, y1, x2, y2) {
+    return Math.atan2(y2 - y1, x2 - x1);
+}
+function boxContains([NW, SE], [x, y], strict = true) {
+    return x > NW[0]
+        && x < SE[0]
+        && y > NW[1]
+        && y < SE[1];
+}
+//# sourceMappingURL=helpers.js.map
+
+let timeStarted = 0;
 class ItemsBar {
     constructor(items = []) {
         this.items = items;
@@ -81,11 +136,11 @@ class ItemsBar {
             level.reset();
             this.resetItems();
         });
-        this.timeText = game.add.text(0, 0, "", {
-            font: "24px Arial",
-            fill: "#fff",
-            boundsAlignH: "center",
-            boundsAlignV: "middle"
+        this.timeText = game.add.text(0, 0, '', {
+            font: '24px Arial',
+            fill: '#fff',
+            boundsAlignH: 'center',
+            boundsAlignV: 'middle'
         });
         this.timeText.setTextBounds(1151, 104, 96, 32);
         this.updateTime();
@@ -97,10 +152,10 @@ class ItemsBar {
             itemToPlace.button.tint = 0xCCCCCC;
             itemToPlace.button.onInputDown.add(() => this.selectItem(itemToPlace));
             itemToPlace.textCount = game.add.text(1220, 250 + i * 80, `x ${itemToPlace.available}`, {
-                font: "24px Arial",
-                fill: "#fff",
-                boundsAlignH: "center",
-                boundsAlignV: "middle"
+                font: '24px Arial',
+                fill: '#fff',
+                boundsAlignH: 'center',
+                boundsAlignV: 'middle'
             });
         });
         this.resetItems();
@@ -108,7 +163,7 @@ class ItemsBar {
     }
     resetItems() {
         this.unselectItem();
-        for (let itemToPlace of this.items) {
+        for (const itemToPlace of this.items) {
             itemToPlace.count = itemToPlace.available;
             itemToPlace.textCount.text = `x ${itemToPlace.count}`;
         }
@@ -125,52 +180,81 @@ class ItemsBar {
         this.itemSpriteToPlace.anchor.set(0.5, 0.5);
         this.itemSpriteToPlace.visible = false;
     }
+    removeItem(itemPlaced) {
+        itemPlaced.sprite.destroy();
+        removeInArray(level.playerItems, itemPlaced);
+        const itemToPlace = this.items.find(itemToPlace => itemPlaced.item instanceof itemToPlace.item);
+        itemToPlace.count++;
+        itemToPlace.textCount.text = `x ${itemToPlace.count}`;
+    }
+    moveItem(itemPlaced) {
+        const itemToPlace = this.items.find(itemToPlace => itemPlaced.item instanceof itemToPlace.item);
+        this.removeItem(itemPlaced);
+        this.selectItem(itemToPlace);
+    }
     unselectItem() {
         if (this.selectedItem)
             this.selectedItem.button.tint = 0xCCCCCC;
         if (this.itemSpriteToPlace)
             this.itemSpriteToPlace.destroy();
         this.selectedItem = null;
+        this.itemSpriteToPlace = null;
+    }
+    placeItem(itemToPlace, x, y) {
+        const newItem = new itemToPlace.item();
+        const itemPlaced = {
+            item: newItem,
+            position: { x, y }
+        };
+        level.playerItems.push(itemPlaced);
+        itemToPlace.count--;
+        itemToPlace.textCount.text = `x ${itemToPlace.count}`;
+        this.spawnItem(itemPlaced);
+    }
+    spawnItem(itemPlaced) {
+        if (itemPlaced.sprite)
+            itemPlaced.sprite.destroy();
+        itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
+        itemPlaced.sprite.inputEnabled = true;
+        itemPlaced.sprite.events.onInputUp.add((sprite, pointer) => {
+            if (!game.paused || this.itemSpriteToPlace)
+                return;
+            this.moveItem(itemPlaced);
+            this.onMouseMove(pointer.x, pointer.y);
+        });
     }
     updateTime() {
         const time = new Date(Date.now() - timeStarted);
-        let [m, s] = [time.getMinutes(), time.getSeconds()];
+        const [m, s] = [time.getMinutes(), time.getSeconds()];
         this.timeText.text = `${m < 10 ? '0' + m : m} : ${s < 10 ? '0' + s : s}`;
     }
-    initInput() {
-        game.input.addMoveCallback((pointer, x, y) => {
-            if (this.itemSpriteToPlace && game.paused) {
-                const { width, height } = this.itemSpriteToPlace;
-                if (x > width / 2
-                    && x < (game.width - 160 - width / 2)
-                    && y > (64 + height / 2)
-                    && y < game.height - height / 2) {
-                    this.itemSpriteToPlace.visible = true;
-                    this.itemSpriteToPlace.x = x;
-                    this.itemSpriteToPlace.y = y;
-                }
-                else {
-                    this.itemSpriteToPlace.visible = false;
-                }
+    onMouseMove(x, y) {
+        if (this.itemSpriteToPlace && game.paused) {
+            const { width, height } = this.itemSpriteToPlace;
+            if (boxContains([
+                [width / 2, 64 + height / 2],
+                [game.width - 160 - width / 2, game.height - height / 2]
+            ], [x, y])) {
+                this.itemSpriteToPlace.visible = true;
+                this.itemSpriteToPlace.x = x;
+                this.itemSpriteToPlace.y = y;
             }
-        }, this);
+            else {
+                this.itemSpriteToPlace.visible = false;
+            }
+        }
+    }
+    initInput() {
+        game.input.addMoveCallback((pointer, x, y) => this.onMouseMove(x, y), this);
         game.input.onTap.add(event => {
             if (this.itemSpriteToPlace && game.paused) {
-                let { x, y } = event;
+                const { x, y } = event;
                 const { width, height } = this.itemSpriteToPlace;
-                if (x > width / 2
-                    && x < (game.width - 160 - width / 2)
-                    && y > (64 + height / 2)
-                    && y < game.height - height / 2) {
-                    const newItem = new this.selectedItem.item();
-                    const playerSprite = newItem.spawn(x, y);
-                    level.playerItems.push({
-                        item: newItem,
-                        position: { x, y },
-                        sprite: playerSprite
-                    });
-                    this.selectedItem.count--;
-                    this.selectedItem.textCount.text = `x ${this.selectedItem.count}`;
+                if (boxContains([
+                    [width / 2, 64 + height / 2],
+                    [game.width - 160 - width / 2, game.height - height / 2]
+                ], [x, y])) {
+                    this.placeItem(this.selectedItem, x, y);
                     this.unselectItem();
                 }
             }
@@ -220,8 +304,7 @@ class Level {
         }
         this.levelSprites = [];
         for (let itemPlaced of this.playerItems) {
-            itemPlaced.sprite.destroy();
-            itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
+            this.itemsBar.spawnItem(itemPlaced);
         }
     }
     update() {
@@ -303,58 +386,6 @@ function getRamps() {
     const MetalRamp2 = new Ramp('metal_ramp2', [[18, 0], [96, 77], [78, 96], [0, 18]]);
     return { MetalRamp1, MetalRamp2 };
 }
-
-var DIRECTION;
-(function (DIRECTION) {
-    DIRECTION[DIRECTION["LEFT"] = 0] = "LEFT";
-    DIRECTION[DIRECTION["RIGHT"] = 1] = "RIGHT";
-})(DIRECTION || (DIRECTION = {}));
-
-var DIRECTION4;
-(function (DIRECTION4) {
-    DIRECTION4[DIRECTION4["LEFT"] = 0] = "LEFT";
-    DIRECTION4[DIRECTION4["RIGHT"] = 1] = "RIGHT";
-    DIRECTION4[DIRECTION4["TOP"] = 2] = "TOP";
-    DIRECTION4[DIRECTION4["BOTTOM"] = 3] = "BOTTOM";
-})(DIRECTION4 || (DIRECTION4 = {}));
-
-var COLOR;
-(function (COLOR) {
-    COLOR[COLOR["RED"] = 0] = "RED";
-    COLOR[COLOR["GREEN"] = 1] = "GREEN";
-    COLOR[COLOR["BLUE"] = 2] = "BLUE";
-    COLOR[COLOR["YELLOW"] = 3] = "YELLOW";
-})(COLOR || (COLOR = {}));
-
-const extractContactPoint = handler => function (bodyA, bodyB, shapeA, shapeB, equation) {
-    let pos = equation[0].bodyA.position;
-    let pt = equation[0].contactPointA;
-    let cx = game.physics.p2.mpxi(pos[0] + pt[0]);
-    let cy = game.physics.p2.mpxi(pos[1] + pt[1]);
-    return handler.call(this, { x: cx, y: cy });
-};
-function removeInArray(arr, elm) {
-    arr.splice(arr.indexOf(elm), 1);
-    return arr;
-}
-
-function inArray(arr, elm) {
-    return arr.indexOf(elm) >= 0; // TS, donne moi includes() !!!
-}
-function overlap(sprite, rect) {
-    let bounds = sprite.getBounds();
-    return bounds.x + bounds.width > rect.x
-        && bounds.x < rect.x + rect.width
-        && bounds.y + bounds.height > rect.y
-        && bounds.y < rect.y + rect.height;
-}
-function calcDistance(x1, y1, x2, y2) {
-    return Math.sqrt(Math.pow((x1 - x2), 2) + Math.pow((y1 - y2), 2));
-}
-function calcAngle(x1, y1, x2, y2) {
-    return Math.atan2(y2 - y1, x2 - x1);
-}
-//# sourceMappingURL=helpers.js.map
 
 class Animal extends Item {
     constructor(...args) {

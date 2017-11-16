@@ -1,6 +1,6 @@
-import { boxContains } from './helpers';
-import { Item } from './Item';
-import { Level } from './Level';
+import {boxContains, removeInArray} from './helpers';
+import {Item} from './Item';
+import {Level} from './Level';
 
 declare var game: Phaser.Game;
 declare var level: Level;
@@ -14,6 +14,12 @@ export interface ItemToPlace {
 	button?: Phaser.Button;
 	textCount?: Phaser.Text;
 	key?: string;
+}
+
+export interface ItemPlaced {
+	item: Item;
+	position: { x: number, y: number };
+	sprite?: Phaser.Sprite;
 }
 
 export class ItemsBar {
@@ -34,7 +40,6 @@ export class ItemsBar {
 			if (game.paused) {
 				playButton.loadTexture('button_restart');
 				game.paused = false;
-				level.start();
 			} else {
 				playButton.loadTexture('button_play');
 				game.paused = true;
@@ -99,6 +104,20 @@ export class ItemsBar {
 		this.itemSpriteToPlace.visible = false;
 	}
 
+	removeItem(itemPlaced: ItemPlaced){
+		itemPlaced.sprite.destroy();
+		removeInArray(level.playerItems, itemPlaced);
+		const itemToPlace = this.items.find(itemToPlace => itemPlaced.item instanceof itemToPlace.item);
+		itemToPlace.count++;
+		itemToPlace.textCount.text = `x ${itemToPlace.count}`;
+	}
+
+	moveItem(itemPlaced: ItemPlaced){
+		const itemToPlace = this.items.find(itemToPlace => itemPlaced.item instanceof itemToPlace.item);
+		this.removeItem(itemPlaced)
+		this.selectItem(itemToPlace)
+	}
+
 	unselectItem() {
 		if (this.selectedItem) this.selectedItem.button.tint = 0xCCCCCC;
 		if (this.itemSpriteToPlace) this.itemSpriteToPlace.destroy();
@@ -106,18 +125,27 @@ export class ItemsBar {
 		this.itemSpriteToPlace = null;
 	}
 
-	spawnItem(item: ItemToPlace, x: number, y: number) {
-		const newItem = new item.item();
-		const playerItem = {
+	placeItem(itemToPlace: ItemToPlace, x: number, y: number) {
+		const newItem = new itemToPlace.item();
+		const itemPlaced: ItemPlaced = {
 			item: newItem,
 			position: { x, y }
 		};
-		level.playerItems.push(playerItem);
+		level.playerItems.push(itemPlaced);
+		itemToPlace.count--;
+		itemToPlace.textCount.text = `x ${itemToPlace.count}`;
+		this.spawnItem(itemPlaced);
+	}
 
-		item.count--;
-		item.textCount.text = `x ${item.count}`;
-
-		level.restart();
+	spawnItem(itemPlaced: ItemPlaced) {
+		if (itemPlaced.sprite) itemPlaced.sprite.destroy();
+		itemPlaced.sprite = itemPlaced.item.spawn(itemPlaced.position.x, itemPlaced.position.y);
+		itemPlaced.sprite.inputEnabled = true;
+		itemPlaced.sprite.events.onInputUp.add((sprite, pointer) => {
+			if(!game.paused || this.itemSpriteToPlace) return;
+			this.moveItem(itemPlaced)
+			this.onMouseMove(pointer.x, pointer.y);
+		})
 	}
 
 	updateTime() {
@@ -126,22 +154,24 @@ export class ItemsBar {
 		this.timeText.text = `${m < 10 ? '0' + m : m} : ${s < 10 ? '0' + s : s}`;
 	}
 
-	initInput() {
-		game.input.addMoveCallback((pointer, x, y) => {
-			if (this.itemSpriteToPlace && game.paused) {
-				const { width, height } = this.itemSpriteToPlace;
-				if (boxContains([
+	onMouseMove(x: number, y: number){
+		if (this.itemSpriteToPlace && game.paused) {
+			const { width, height } = this.itemSpriteToPlace;
+			if (boxContains([
 					[width / 2, 64 + height / 2],
 					[game.width - 160 - width / 2, game.height - height / 2]
 				], [x, y])) {
-					this.itemSpriteToPlace.visible = true;
-					this.itemSpriteToPlace.x = x;
-					this.itemSpriteToPlace.y = y;
-				} else {
-					this.itemSpriteToPlace.visible = false;
-				}
+				this.itemSpriteToPlace.visible = true;
+				this.itemSpriteToPlace.x = x;
+				this.itemSpriteToPlace.y = y;
+			} else {
+				this.itemSpriteToPlace.visible = false;
 			}
-		}, this);
+		}
+	}
+
+	initInput() {
+		game.input.addMoveCallback((pointer, x, y) => this.onMouseMove(x,y), this)
 
 		game.input.onTap.add(event => {
 			if (this.itemSpriteToPlace && game.paused) {
@@ -152,7 +182,7 @@ export class ItemsBar {
 					[width / 2, 64 + height / 2],
 					[game.width - 160 - width / 2, game.height - height / 2]
 				], [x, y])) {
-					this.spawnItem(this.selectedItem, x, y);
+					this.placeItem(this.selectedItem, x, y);
 					this.unselectItem();
 				}
 			}
