@@ -145,11 +145,11 @@ class ItemsBar {
         setInterval(() => this.updateTime(), 1000);
         this.items.forEach((itemToPlace, i) => {
             itemToPlace.key = (new itemToPlace.item()).key;
-            itemToPlace.button = game.add.button(1170, 265 + i * 80, itemToPlace.key);
+            itemToPlace.button = game.add.button(1170, 265 + i * 100, itemToPlace.key);
             itemToPlace.button.anchor.set(0.5, 0.5);
             itemToPlace.button.tint = 0xCCCCCC;
             itemToPlace.button.onInputDown.add(() => this.selectItem(itemToPlace));
-            itemToPlace.textCount = game.add.text(1220, 250 + i * 80, `x ${itemToPlace.available}`, {
+            itemToPlace.textCount = game.add.text(1220, 250 + i * 100, `x ${itemToPlace.available}`, {
                 font: '24px Arial',
                 fill: '#fff',
                 boundsAlignH: 'center',
@@ -354,6 +354,13 @@ class MetalRamp1 extends Ramp {
         this.bbox = [82, 0, 96, 14, 14, 96, 0, 82];
     }
 }
+class MetalRamp2 extends Ramp {
+    constructor(...args) {
+        super(...args);
+        this.key = 'metal_ramp2';
+        this.bbox = [14, 0, 96, 82, 82, 96, 0, 14];
+    }
+}
 
 class Animal extends Item {
     constructor(...args) {
@@ -478,7 +485,7 @@ class Fan extends Machine {
         this.height = 64;
         this.direction = DIRECTION.RIGHT;
         this.range = 300;
-        this.strength = 50;
+        this.strength = 65;
     }
     spawn(x, y) {
         super.spawn(x, y);
@@ -504,7 +511,7 @@ class Fan extends Machine {
             for (let sprite of level.sprites) {
                 if (sprite !== this.sprite && blowzone.contains(sprite.centerX, sprite.centerY)) {
                     let distance = Math.abs(sprite.x - this.sprite.x);
-                    let acceleration = this.strength * (this.range - distance) / this.range;
+                    let acceleration = this.strength / sprite.body.mass * (this.range - distance) / this.range;
                     sprite.body.velocity.x += acceleration * (this.direction === DIRECTION.LEFT ? -1 : 1);
                 }
             }
@@ -668,7 +675,7 @@ class Rocket extends InflammableItem {
         this.sprite.frame = 1;
     }
     explode() {
-        explode(this.sprite.x, this.sprite.y, 120, 100);
+        explode(this.sprite.x, this.sprite.y, 125, 85);
         removeInArray(level.sprites, this.sprite);
         this.sprite.kill();
     }
@@ -680,9 +687,10 @@ class Level1 extends Level {
         this.objective = "Drop the four turtles into the radioactive tank";
         this.items = [
             { item: BowlingBall, available: 1 },
-            { item: Football, available: 5 },
-            { item: Pizza, available: 3 },
-            { item: MetalRamp1, available: 1 }
+            { item: Football, available: 1 },
+            { item: Pizza, available: 2 },
+            { item: MetalRamp1, available: 1 },
+            { item: MetalRamp2, available: 1 }
         ];
     }
     initialize() {
@@ -707,7 +715,7 @@ class Level1 extends Level {
         const fan = new Fan();
         fan.direction = DIRECTION.RIGHT;
         fan.powerSource = powerSwitchFan;
-        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(580, 424), michelangelo.spawn(130, 420), powerSwitchLaser.spawn(640, 848), laser.spawn(600, 848), rocket.spawn(80, 800), powerSwitchFan.spawn(335, 562), fan.spawn(360, 430));
+        this.levelSprites.push(donatello.spawn(310, 170), leonardo.spawn(1060, 328), raphael.spawn(490, 425), michelangelo.spawn(138, 425), powerSwitchLaser.spawn(640, 848), laser.spawn(600, 848), rocket.spawn(80, 800), powerSwitchFan.spawn(335, 562), fan.spawn(360, 430));
     }
 }
 

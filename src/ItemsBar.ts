@@ -68,11 +68,11 @@ export class ItemsBar {
 
 		this.items.forEach((itemToPlace, i) => {
 			itemToPlace.key = (new itemToPlace.item()).key;
-			itemToPlace.button = game.add.button(1170, 265 + i * 80, itemToPlace.key);
+			itemToPlace.button = game.add.button(1170, 265 + i * 100, itemToPlace.key);
 			itemToPlace.button.anchor.set(0.5, 0.5);
 			itemToPlace.button.tint = 0xCCCCCC;
 			itemToPlace.button.onInputDown.add(() => this.selectItem(itemToPlace));
-			itemToPlace.textCount = game.add.text(1220, 250 + i * 80, `x ${itemToPlace.available}`, {
+			itemToPlace.textCount = game.add.text(1220, 250 + i * 100, `x ${itemToPlace.available}`, {
 				font: '24px Arial',
 				fill: '#fff',
 				boundsAlignH: 'center',

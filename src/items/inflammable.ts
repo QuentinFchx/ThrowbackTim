@@ -95,7 +95,7 @@ export class Rocket extends InflammableItem {
 	}
 
 	explode(){
-		explode(this.sprite.x, this.sprite.y, 120, 100);
+		explode(this.sprite.x, this.sprite.y, 125, 85);
 		removeInArray(level.sprites, this.sprite)
 		this.sprite.kill();
 	}

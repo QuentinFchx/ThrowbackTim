@@ -7,7 +7,7 @@ import {Level} from '../Level';
 import {DIRECTION, DIRECTION4} from "../helpers";
 
 import {BowlingBall, Football} from '../items/balls';
-import {MetalRamp1} from '../items/ramps';
+import {MetalRamp1, MetalRamp2} from '../items/ramps';
 import {Turtle} from '../items/animals';
 import {Fan, Laser, PowerSwitch} from "../items/machines";
 import {Rocket} from "../items/inflammable";
@@ -18,9 +18,10 @@ export class Level1 extends Level {
 
 	items = [
 		{ item: BowlingBall, available: 1 },
-		{ item: Football, available: 5 },
-		{ item: Pizza, available: 3 },
-		{ item: MetalRamp1, available: 1 }
+		{ item: Football, available: 1 },
+		{ item: Pizza, available: 2 },
+		{ item: MetalRamp1, available: 1 },
+		{ item: MetalRamp2, available: 1 }
 	]
 
 	initialize() {
@@ -52,10 +53,10 @@ export class Level1 extends Level {
 		fan.powerSource = powerSwitchFan;
 
 		this.levelSprites.push(
-			donatello.spawn(130,170),
-			leonardo.spawn(1040,325),
-			raphael.spawn(580,424),
-			michelangelo.spawn(130,420),
+			donatello.spawn(310,170),
+			leonardo.spawn(1060,328),
+			raphael.spawn(490,425),
+			michelangelo.spawn(138,425),
 			powerSwitchLaser.spawn(640,848),
 			laser.spawn(600,848),
 			rocket.spawn(80,800),

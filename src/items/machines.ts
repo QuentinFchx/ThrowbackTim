@@ -74,7 +74,7 @@ export class Fan extends Machine {
 	height=64;
 	direction: DIRECTION = DIRECTION.RIGHT;
 	range = 300;
-	strength = 50;
+	strength = 65;
 
 	static FRAMES = {
 		[DIRECTION.RIGHT]: [0,1],
@@ -105,7 +105,7 @@ export class Fan extends Machine {
 			for(let sprite of level.sprites){
 				if(sprite !== this.sprite && blowzone.contains(sprite.centerX, sprite.centerY)){
 					let distance = Math.abs(sprite.x - this.sprite.x);
-					let acceleration = this.strength * (this.range - distance) / this.range
+					let acceleration = this.strength / sprite.body.mass * (this.range - distance) / this.range
 					sprite.body.velocity.x += acceleration * (this.direction === DIRECTION.LEFT ? -1 : 1);
 				}
 			}
