@@ -1,5 +1,5 @@
 import {StaticItem} from "../Item";
-import {DIRECTION, DIRECTION4, extractContactPoint, COLOR, removeInArray} from "../helpers";
+import {DIRECTION, DIRECTION4, extractContactPoint, COLOR, removeInArray, boxContains} from "../helpers";
 import {Level} from "../Level";
 
 declare var game: Phaser.Game;
@@ -16,6 +16,7 @@ export class Machine extends StaticItem {
 		this.sprite = super.spawn(x, y);
 		this.sprite.body.setRectangle(this.width, this.height);
 		this.sprite.update = () => this.update();
+		this.switchPower(this.isPowered);
 		return this.sprite;
 	}
 
@@ -67,6 +68,51 @@ export class PowerSwitch extends PowerSource {
 
 }
 
+export class Fan extends Machine {
+	key="fan";
+	width=46;
+	height=64;
+	direction: DIRECTION = DIRECTION.RIGHT;
+	range = 300;
+	strength = 50;
+
+	static FRAMES = {
+		[DIRECTION.RIGHT]: [0,1],
+		[DIRECTION.LEFT]: [1,2]
+	}
+
+	spawn(x: number, y: number): Phaser.Sprite {
+		super.spawn(x,y);
+		this.sprite.animations.add('blowRight', Fan.FRAMES[DIRECTION.RIGHT], this.strength, true);
+		this.sprite.animations.add('blowLeft', Fan.FRAMES[DIRECTION.LEFT], this.strength, true);
+		return this.sprite
+	}
+
+	switchPower(on: boolean){
+		super.switchPower(on);
+		if(this.isPowered){
+			this.sprite.play(this.direction === DIRECTION.RIGHT ? 'blowRight' : 'blowLeft')
+		} else {
+			this.sprite.frame = Fan.FRAMES[this.direction][0];
+		}
+	}
+
+	update(){
+		super.update();
+		if(this.isPowered){
+			let blowzone = new Phaser.Rectangle(this.sprite.x, this.sprite.y-50, this.range, 100);
+			if(this.direction === DIRECTION.LEFT) blowzone.x -= this.range;
+			for(let sprite of level.sprites){
+				if(sprite !== this.sprite && blowzone.contains(sprite.centerX, sprite.centerY)){
+					let distance = Math.abs(sprite.x - this.sprite.x);
+					let acceleration = this.strength * (this.range - distance) / this.range
+					sprite.body.velocity.x += acceleration * (this.direction === DIRECTION.LEFT ? -1 : 1);
+				}
+			}
+		}
+	}
+}
+
 export class Laser extends Machine {
 	key="laser_machine";
 	width=32;
@@ -86,12 +132,6 @@ export class Laser extends Machine {
 		[COLOR.GREEN]: [1,5],
 		[COLOR.RED]: [2,6],
 		[COLOR.BLUE]: [3,7]
-	}
-
-	spawn(x: number, y: number): Phaser.Sprite {
-		super.spawn(x, y);
-		this.switchPower(this.isPowered);
-		return this.sprite;
 	}
 
 	switchPower(on: boolean){

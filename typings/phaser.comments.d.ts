@@ -21104,7 +21104,7 @@ declare module Phaser {
                 * @param scale Optionally resize the loaded polygon. - Default: 1
                 * @return True on success, else false.
                 */
-                loadPolygon(key: string, object: string, scale ?: number): boolean;
+                loadPolygon(key: string, object: string | object, scale ?: number): boolean;
 
                 /**
                 * Moves the Body backwards based on its current angle and the given speed.

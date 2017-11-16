@@ -67,15 +67,9 @@ export class Animal extends Item {
 }
 
 
-export function getAnimals() {
-	class Turtle extends Animal {
-		key = "turtle";
-		width = 45;
-		height = 30;
-		speed = 50;
-	}
-
-	return {
-		Turtle
-	};
+export class Turtle extends Animal {
+	key = "turtle";
+	width = 45;
+	height = 30;
+	speed = 50;
 }

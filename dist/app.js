@@ -4,12 +4,10 @@
 const DEBUG_HITBOX = false;
 class Item {
     constructor() {
-        this.spriteMaterial = game.physics.p2.createMaterial('spriteMaterial');
     }
     spawn(x, y) {
         const sprite = game.add.sprite(x, y, this.key);
         game.physics.p2.enable(sprite, DEBUG_HITBOX);
-        sprite.body.setMaterial(this.spriteMaterial);
         return sprite;
     }
 }
@@ -338,53 +336,23 @@ class BowlingBall extends Ball {
     }
 }
 
-class Bouncer extends StaticItem {
-    constructor(key, polygon) {
-        super();
-        this.key = key;
-        this.polygon = polygon;
-        this.bounceFactor = 1.5;
-    }
-    spawn(x, y) {
-        const sprite = super.spawn(x, y);
-        const body = sprite.body;
-        body.clearShapes();
-        body.addPolygon(null, this.polygon);
-        body.onBeginContact.add(onContact, this);
-        return sprite;
-    }
-}
-function onContact(body, bodyB, shapeA, shapeB, equations) {
-    const contactEquation = equations[0];
-    const isTopSurface = contactEquation.contactPointA[0] === 0;
-    if (isTopSurface)
-        contactEquation.restitution = this.bounceFactor;
-}
-function getBouncers() {
-    const Bouncy = new Bouncer('bouncer', [[0, 0], [60, 0], [60, 20], [0, 20]]);
-    return {
-        Bouncy
-    };
-}
-
 class Ramp extends StaticItem {
-    constructor(key, polygon) {
-        super();
-        this.key = key;
-        this.polygon = polygon;
-    }
     spawn(x, y) {
         const sprite = super.spawn(x, y);
+        sprite.anchor.set(0.5, 0.5);
         const body = sprite.body;
+        body.static = true;
         body.clearShapes();
-        body.addPolygon(null, this.polygon);
+        body.loadPolygon(null, [{ "shape": this.bbox }]);
         return sprite;
     }
 }
-function getRamps() {
-    const MetalRamp1 = new Ramp('metal_ramp1', [[78, 0], [96, 18], [18, 96], [0, 76]]);
-    const MetalRamp2 = new Ramp('metal_ramp2', [[18, 0], [96, 77], [78, 96], [0, 18]]);
-    return { MetalRamp1, MetalRamp2 };
+class MetalRamp1 extends Ramp {
+    constructor(...args) {
+        super(...args);
+        this.key = 'metal_ramp1';
+        this.bbox = [82, 0, 96, 14, 14, 96, 0, 82];
+    }
 }
 
 class Animal extends Item {
@@ -435,19 +403,14 @@ class Animal extends Item {
             this.idle();
     }
 }
-function getAnimals() {
-    class Turtle extends Animal {
-        constructor(...args) {
-            super(...args);
-            this.key = "turtle";
-            this.width = 45;
-            this.height = 30;
-            this.speed = 50;
-        }
+class Turtle extends Animal {
+    constructor(...args) {
+        super(...args);
+        this.key = "turtle";
+        this.width = 45;
+        this.height = 30;
+        this.speed = 50;
     }
-    return {
-        Turtle
-    };
 }
 
 class Machine extends StaticItem {
@@ -459,6 +422,7 @@ class Machine extends StaticItem {
         this.sprite = super.spawn(x, y);
         this.sprite.body.setRectangle(this.width, this.height);
         this.sprite.update = () => this.update();
+        this.switchPower(this.isPowered);
         return this.sprite;
     }
     update() {
@@ -506,6 +470,51 @@ class PowerSwitch extends PowerSource {
         this.sprite.frame = (this.direction === DIRECTION.LEFT ? 1 : 0);
     }
 }
+class Fan extends Machine {
+    constructor(...args) {
+        super(...args);
+        this.key = "fan";
+        this.width = 46;
+        this.height = 64;
+        this.direction = DIRECTION.RIGHT;
+        this.range = 300;
+        this.strength = 50;
+    }
+    spawn(x, y) {
+        super.spawn(x, y);
+        this.sprite.animations.add('blowRight', Fan.FRAMES[DIRECTION.RIGHT], this.strength, true);
+        this.sprite.animations.add('blowLeft', Fan.FRAMES[DIRECTION.LEFT], this.strength, true);
+        return this.sprite;
+    }
+    switchPower(on) {
+        super.switchPower(on);
+        if (this.isPowered) {
+            this.sprite.play(this.direction === DIRECTION.RIGHT ? 'blowRight' : 'blowLeft');
+        }
+        else {
+            this.sprite.frame = Fan.FRAMES[this.direction][0];
+        }
+    }
+    update() {
+        super.update();
+        if (this.isPowered) {
+            let blowzone = new Phaser.Rectangle(this.sprite.x, this.sprite.y - 50, this.range, 100);
+            if (this.direction === DIRECTION.LEFT)
+                blowzone.x -= this.range;
+            for (let sprite of level.sprites) {
+                if (sprite !== this.sprite && blowzone.contains(sprite.centerX, sprite.centerY)) {
+                    let distance = Math.abs(sprite.x - this.sprite.x);
+                    let acceleration = this.strength * (this.range - distance) / this.range;
+                    sprite.body.velocity.x += acceleration * (this.direction === DIRECTION.LEFT ? -1 : 1);
+                }
+            }
+        }
+    }
+}
+Fan.FRAMES = {
+    [DIRECTION.RIGHT]: [0, 1],
+    [DIRECTION.LEFT]: [1, 2]
+};
 class Laser extends Machine {
     constructor(...args) {
         super(...args);
@@ -514,11 +523,6 @@ class Laser extends Machine {
         this.height = 32;
         this.direction = DIRECTION4.RIGHT;
         this.laserColor = COLOR.RED;
-    }
-    spawn(x, y) {
-        super.spawn(x, y);
-        this.switchPower(this.isPowered);
-        return this.sprite;
     }
     switchPower(on) {
         super.switchPower(on);
@@ -673,33 +677,37 @@ class Rocket extends InflammableItem {
 class Level1 extends Level {
     constructor(...args) {
         super(...args);
-        this.objective = "Faire tomber les 4 tortues dans le bac radioactif";
+        this.objective = "Drop the four turtles into the radioactive tank";
         this.items = [
             { item: BowlingBall, available: 1 },
             { item: Football, available: 5 },
-            { item: Pizza, available: 3 }
+            { item: Pizza, available: 3 },
+            { item: MetalRamp1, available: 1 }
         ];
     }
     initialize() {
         super.initialize();
+        game.stage.backgroundColor = "#4c9bbf";
     }
     restart() {
         super.restart();
-        const { MetalRamp1, MetalRamp2 } = getRamps();
-        const { Bouncy } = getBouncers();
-        const { Turtle } = getAnimals();
         const donatello = new Turtle();
         const leonardo = new Turtle();
         const raphael = new Turtle();
         const michelangelo = new Turtle();
         leonardo.lookingDir = DIRECTION.LEFT;
-        const powerSwitch = new PowerSwitch();
-        powerSwitch.direction = DIRECTION.RIGHT;
+        const powerSwitchLaser = new PowerSwitch();
+        powerSwitchLaser.direction = DIRECTION.RIGHT;
         const laser = new Laser();
         laser.direction = DIRECTION4.LEFT;
-        laser.powerSource = powerSwitch;
+        laser.powerSource = powerSwitchLaser;
         const rocket = new Rocket();
-        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(600, 424), michelangelo.spawn(130, 420), powerSwitch.spawn(640, 848), laser.spawn(600, 848), rocket.spawn(80, 800));
+        const powerSwitchFan = new PowerSwitch();
+        powerSwitchFan.direction = DIRECTION.RIGHT;
+        const fan = new Fan();
+        fan.direction = DIRECTION.RIGHT;
+        fan.powerSource = powerSwitchFan;
+        this.levelSprites.push(donatello.spawn(130, 170), leonardo.spawn(1040, 325), raphael.spawn(580, 424), michelangelo.spawn(130, 420), powerSwitchLaser.spawn(640, 848), laser.spawn(600, 848), rocket.spawn(80, 800), powerSwitchFan.spawn(335, 562), fan.spawn(360, 430));
     }
 }
 
@@ -733,12 +741,12 @@ const game$1 = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
         game$1.load.spritesheet('laser_ray', 'assets/sprites/laser.png', 32, 32);
         game$1.load.spritesheet('rocket', 'assets/sprites/rocket.png', 64, 128);
         game$1.load.spritesheet('explosion', 'assets/sprites/explode.png', 128, 128);
+        game$1.load.spritesheet('fan', 'assets/sprites/fan.png', 46, 64);
         game$1.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
     },
     create() {
         game$1.paused = true;
         game$1.world.setBounds(0, 64, 32 * 35, 32 * 28);
-        game$1.stage.backgroundColor = "#4488AA";
         initPhysics();
         const map = game$1.add.tilemap('level1');
         map.addTilesetImage('city_tiles');

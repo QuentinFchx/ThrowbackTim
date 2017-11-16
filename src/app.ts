@@ -38,13 +38,13 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.spritesheet('laser_ray', 'assets/sprites/laser.png', 32, 32);
 		game.load.spritesheet('rocket', 'assets/sprites/rocket.png', 64, 128);
 		game.load.spritesheet('explosion', 'assets/sprites/explode.png', 128, 128);
+		game.load.spritesheet('fan', 'assets/sprites/fan.png', 46, 64);
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
 	create() {
 		game.paused = true;
 		game.world.setBounds(0, 64, 32 * 35, 32 * 28);
-		game.stage.backgroundColor = "#4488AA";
 
 		initPhysics();
 
