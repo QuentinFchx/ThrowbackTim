@@ -39,6 +39,7 @@ const game = new Phaser.Game(1280, 960, Phaser.AUTO, 'content', {
 		game.load.spritesheet('rocket', 'assets/sprites/rocket.png', 64, 128);
 		game.load.spritesheet('explosion', 'assets/sprites/explode.png', 128, 128);
 		game.load.spritesheet('fan', 'assets/sprites/fan.png', 46, 64);
+		game.load.spritesheet('chain', 'assets/sprites/chain.png', 16, 26);
 
 		game.load.tilemap('level1', 'assets/levels/level1.json', null, Phaser.Tilemap.TILED_JSON);
 	},
