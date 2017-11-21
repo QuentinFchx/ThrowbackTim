@@ -1,4 +1,4 @@
-import {Ball} from "../Item";
+import { Ball } from '../Item';
 
 export class Football extends Ball {
 	key = 'ball_football';
@@ -7,18 +7,22 @@ export class Football extends Ball {
 }
 
 export class BasketBall extends Ball {
-	key = 'ball_basket'
-	radius = 32
+	key = 'ball_basket';
+	radius = 32;
 }
 
 export class BowlingBall extends Ball {
-	key = 'ball_bowling'
+	key = 'ball_bowling';
 	radius = 32;
 	mass = 5;
 }
 
 export class TennisBall extends Ball {
-	key = 'ball_tennis'
+	key = 'ball_tennis';
 	radius = 16;
 	mass = 0.5;
+}
+
+export class HeliumBaloon extends BowlingBall {
+	gravityScale = -1;
 }

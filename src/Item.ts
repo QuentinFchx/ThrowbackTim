@@ -18,6 +18,7 @@ export class Item {
 export class Ball extends Item {
 	radius: number = 16;
 	mass: number = 1;
+	gravityScale: number = 1;
 
 	constructor() {
 		super();
@@ -25,10 +26,11 @@ export class Ball extends Item {
 
 	spawn(x: number, y: number): Phaser.Sprite {
 		const sprite = super.spawn(x, y);
-		sprite.width = 2*this.radius;
-		sprite.height = 2*this.radius;
+		sprite.width = 2 * this.radius;
+		sprite.height = 2 * this.radius;
 		sprite.body.setCircle(this.radius);
 		sprite.body.mass = this.mass;
+		sprite.body.data.gravityScale = this.gravityScale;
 		return sprite;
 	}
 }
